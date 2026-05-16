@@ -28,7 +28,7 @@ description: >
 
 | 문서 유형 | 필수 확인 항목 |
 |---|---|
-| API 명세 | 엔드포인트, HTTP 메서드, 요청/응답 형식, 인증 방식, 에러 코드 |
+| API 명세 | 엔드포인트, HTTP 메서드, 요청/응답 형식, 에러 코드 |
 | 도메인 문서 | 엔티티 목록, 속성, 비즈니스 규칙 |
 | DB 스키마 | 테이블 목록, 필드/타입/제약, 테이블 간 관계 |
 | 실행 방법 | 환경 변수, 사전 조건, 실행 명령어, 프로파일 |
@@ -40,31 +40,126 @@ description: >
 
 ### 1. API 명세
 
+- 인증은 `X-User-Id` 헤더로 처리한다.
+- 공통 응답과 에러 응답 포맷은 문서 상단에 한 번만 정의한다.
+- 복잡한 중첩 구조가 있는 경우에만 샘플 요청/응답을 추가한다.
+
+파일 구조:
 ```markdown
-## POST /api/users
+    # API 명세서
 
-사용자를 생성한다.
+    | 작성일 | 수정일 |
+    |---|---|
+    | YYYY-MM-DD | YYYY-MM-DD |
 
-### Request
+    ## 목차
+    - [공통 응답 포맷](#공통-응답-포맷)
+    - [페이지네이션 응답 포맷](#페이지네이션-응답-포맷)
+    - [에러 응답 포맷](#에러-응답-포맷)
+    - [도메인명 API](#도메인명-api)
 
-| 필드 | 타입 | 필수 | 설명 |
-|---|---|---|---|
-| email | String | Y | 이메일 (중복 불가) |
-| password | String | Y | 비밀번호 (8자 이상) |
+    ---
 
-### Response
+    ## 공통 응답 포맷
 
-**201 Created**
-| 필드 | 타입 | 설명 |
-|---|---|---|
-| id | Long | 생성된 사용자 ID |
-| email | String | 이메일 |
+    성공적인 API 응답은 다음 형식을 따릅니다.
 
-### Error
-| 상태코드 | 에러코드 | 설명 |
-|---|---|---|
-| 400 | INVALID_INPUT | 유효성 검사 실패 |
-| 409 | DUPLICATE_EMAIL | 이미 존재하는 이메일 |
+    ```json
+    {
+      "success": true,
+      "data": { },
+      "message": "요청이 성공적으로 처리되었습니다."
+    }
+    ```
+    
+    ---
+    
+    ## 페이지네이션 응답 포맷
+    
+    페이지네이션이 필요한 조회 API는 다음 형식을 따릅니다.
+    커서 기반 페이지네이션을 사용하며, 클라이언트가 size를 지정할 수 있습니다.
+    첫 요청은 cursor 없이 보내고, 응답의 nextCursor를 다음 요청에 넘깁니다.
+    
+    요청:
+    `GET /api/resource?cursor=2024-01-01T00:00:00.000Z&size=10`
+    
+    응답:
+    ```json
+    {
+        "success": true,
+        "data": {
+            "content": [ ],
+            "nextCursor": "2024-01-01T00:00:00.000Z",
+            "hasNext": true
+        },
+        "message": "요청이 성공적으로 처리되었습니다."
+    }
+    ```
+    - nextCursor: 마지막 항목의 createdAt 값
+    - hasNext: false이면 다음 페이지 없음
+
+    ---
+
+    ## 에러 응답 포맷
+
+    에러 발생 시 RFC 9457 표준을 따르는 ProblemDetail 포맷으로 응답합니다.
+
+    ```json
+    {
+      "type": "https://api.example.com/errors/{error_code}",
+      "title": "{HTTP Reason Phrase}",
+      "status": 400,
+      "detail": "{상세 설명}",
+      "instance": "/api/...",
+      "code": "{ERROR_CODE}",
+      "timestamp": "{ISO-8601 UTC}"
+    }
+    ```
+
+    ---
+
+    ## [도메인명] API
+
+    ### POST /api/resource
+
+    리소스를 생성한다.
+
+    #### 요청 헤더
+    ```
+    Content-Type: application/json
+    X-User-Id: 1
+    ```
+
+    #### 요청 본문
+    ```json
+    {
+      "field": "value"
+    }
+    ```
+
+    #### 응답 본문 (201 Created)
+    ```json
+    {
+      "success": true,
+      "data": {
+        "id": 1
+      },
+      "message": "..."
+    }
+    ```
+
+    #### 에러 응답 (409 Conflict)
+    ```json
+    {
+      "type": "https://api.example.com/errors/{error_code}",
+      "title": "Conflict",
+      "status": 409,
+      "detail": "...",
+      "instance": "/api/...",
+      "code": "ERROR_CODE",
+      "timestamp": "2025-01-01T00:00:00.000Z"
+    }
+    ```
 ```
 
 ---
