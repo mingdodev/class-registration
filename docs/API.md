@@ -233,7 +233,7 @@ X-Creator-Id: {강사 ID}
 }
 ```
 
-> `startDate`, `endDate`는 선택 항목이다. 미입력 시 수강 기간이 무제한으로 설정된다.
+> `startDate`, `endDate`는 선택 항목이다. 둘 다 입력하거나 둘 다 생략해야 한다. 생략 시 수강 기간이 무제한으로 설정된다.
 
 #### 응답 본문 (201 Created)
 
@@ -292,6 +292,8 @@ X-Creator-Id: {강사 ID}
 | `maxCapacity` | O | O (증가만 가능) |
 | `startDate` | O | O |
 | `endDate` | O | O |
+
+> `startDate`와 `endDate`는 함께 입력하거나 둘 다 생략해야 한다.
 
 #### 요청 본문
 

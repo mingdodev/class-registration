@@ -32,13 +32,13 @@
 
 ### 속성
 
-제목(title), 설명(description), 강사(creator), 가격(price), 상태(status), 최대 수강 정원(maxCapacity), 현재 신청 가능 인원(remainingCapacity), 수강 시작일(startDate), 수강 종료일(endDate)
+제목(title), 설명(description), 강사(creator), 가격(price), 상태(status), 최대 수강 정원(maxCapacity), 현재 신청 가능 인원(remainingCapacity), 수강 시작일(startDate), 수강 종료일(endDate), 등록 시각(createdAt), 마지막 수정 시각(updatedAt)
 
 ### 규칙
 
 - 강의명은 20자 이내로 지정해야 한다.
 - 수강 정원은 1명 이상이어야 한다.
-- 수강 기간(수강 시작일, 수강 종료일)이 따로 없다면, 무제한으로 수강 신청이 가능하다.
+- 수강 기간(수강 시작일, 수강 종료일)이 따로 없다면, 무제한으로 수강 신청이 가능하다. 수강 시작일과 수강 종료일은 함께 설정하거나 둘 다 설정하지 않아야 한다.
 - 수강 기간이 종료된 후에는 수강 신청이 불가능하다.
 - 수강생은 최대 수강 정원보다 많아서는 안 된다.
 - 동시에 여러 수강생이 마지막 자리에 신청하더라도 정원을 초과해서는 안 된다.
