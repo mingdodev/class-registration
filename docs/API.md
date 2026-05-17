@@ -110,6 +110,7 @@ RFC 9457 표준을 따르는 ProblemDetail 포맷으로 응답합니다.
 | `ENROLLMENT_NOT_FOUND` | 404 | 수강 신청을 찾을 수 없음 |
 | `ENROLLMENT_ALREADY_EXISTS` | 409 | 이미 수강 신청한 강의 (PENDING 또는 CONFIRMED 상태인 경우, CANCELLED 후 재신청은 가능) |
 | `ENROLLMENT_NOT_PENDING` | 409 | PENDING 상태가 아닌 수강 신청을 결제 처리하려 함 |
+| `ENROLLMENT_PAYMENT_EXPIRED` | 409 | 결제 가능 시간(24시간)이 지남 |
 | `ENROLLMENT_CANCEL_NOT_ALLOWED` | 409 | 취소 가능 기간(강의 시작일 3일 전)이 지남 |
 | `ENROLLMENT_NOT_CONFIRMED` | 409 | CONFIRMED 상태가 아닌 수강 신청을 취소하려 함 |
 
@@ -508,6 +509,7 @@ X-Klassmate-Id: {수강생 ID}
 |---|---|---|
 | 수강 신청 없음 | `ENROLLMENT_NOT_FOUND` | 404 |
 | PENDING 상태가 아님 | `ENROLLMENT_NOT_PENDING` | 409 |
+| 결제 가능 시간(24시간) 초과 | `ENROLLMENT_PAYMENT_EXPIRED` | 409 |
 
 ---
 
