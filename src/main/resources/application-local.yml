@@ -1,0 +1,22 @@
+spring:
+  datasource:
+    url: jdbc:h2:mem:class-registration;MODE=MySQL
+    driver-class-name: org.h2.Driver
+    username: sa
+    password:
+  h2:
+    console:
+      enabled: true
+  jpa:
+    hibernate:
+      ddl-auto: create
+    show-sql: true
+    defer-datasource-initialization: true # jpa의 ddl-auto 설정을 먼저 적용한 뒤, init 쿼리가 실행됨
+    properties:
+      hibernate:
+        format_sql: true
+  sql:
+    init:
+      mode: always
+      schema-locations:
+      data-locations: classpath:data-local.sql

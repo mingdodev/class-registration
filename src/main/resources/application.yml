@@ -2,4 +2,5 @@ spring:
   application:
     name: class-registration
 
-
+  profiles:
+    active: local
