@@ -26,6 +26,15 @@ public interface KlassRepository extends JpaRepository<Klass, Long> {
     @Query("UPDATE Klass k SET k.remainingCapacity = k.remainingCapacity + 1 WHERE k.id = :klassId")
     void increaseRemainingCapacity(@Param("klassId") Long klassId);
 
+    @Modifying(clearAutomatically = true)
+    @Query("""
+        UPDATE Klass k
+        SET k.maxCapacity = :newMaxCapacity,
+            k.remainingCapacity = k.remainingCapacity + (:newMaxCapacity - k.maxCapacity)
+        WHERE k.id = :klassId
+    """)
+    int updateCapacity(@Param("klassId") Long klassId, @Param("newMaxCapacity") int newMaxCapacity);
+
     // 스케줄러: 수강 종료일이 지난 OPEN 강의 조회
     @Query("SELECT k FROM Klass k WHERE k.status = 'OPEN' AND k.endDate IS NOT NULL AND k.endDate < :today")
     List<Klass> findExpiredOpenKlasses(@Param("today") LocalDate today);

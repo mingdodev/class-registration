@@ -101,8 +101,7 @@ public class Klass {
             if (status != KlassStatus.DRAFT && maxCapacity < this.maxCapacity) {
                 throw new BusinessException(ErrorCode.KLASS_CAPACITY_DECREASE_NOT_ALLOWED);
             }
-            this.remainingCapacity += maxCapacity - this.maxCapacity;
-            this.maxCapacity = maxCapacity;
+            // 실제 DB 반영은 KlassService에서 원자적 쿼리로 처리
         }
         if (startDate != null) this.startDate = startDate;
         if (endDate != null) this.endDate = endDate;

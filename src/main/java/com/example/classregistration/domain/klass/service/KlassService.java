@@ -56,11 +56,14 @@ public class KlassService {
         klass.update(request.title(), request.description(), request.price(),
                 request.maxCapacity(), request.startDate(), request.endDate());
 
-        // CLOSED 상태에서 정원 증가 시 증가한 수만큼 이벤트 발행
-        if (klass.getStatus() == KlassStatus.CLOSED && request.maxCapacity() != null) {
-            int added = klass.getMaxCapacity() - oldMaxCapacity;
-            for (int i = 0; i < added; i++) {
-                waitlistEventPublisher.publish(klassId);
+        if (request.maxCapacity() != null) {
+            klassRepository.updateCapacity(klassId, request.maxCapacity());
+            // CLOSED 상태에서 정원 증가 시 증가한 수만큼 이벤트 발행
+            if (klass.getStatus() == KlassStatus.CLOSED) {
+                int added = request.maxCapacity() - oldMaxCapacity;
+                for (int i = 0; i < added; i++) {
+                    waitlistEventPublisher.publish(klassId);
+                }
             }
         }
     }

@@ -1,7 +1,7 @@
 # ADR-007: 트러블슈팅 관련 의사결정
 
-| 작성일 | 수정일 |
-|---|---|
+| 작성일 | 수정일        |
+|---|------------|
 | 2026-05-19 | 2026-05-19 |
 
 ---
@@ -63,3 +63,54 @@ public void cancelExpiredPendingEnrollments() {
 
 > cf. 컨트롤러 → 서비스 흐름에서는 OSIV(`spring.jpa.open-in-view`)가 HTTP 요청 스레드에 EntityManager를 바인딩하여 트랜잭션 밖에서도 lazy 로딩이 가능하다.
 > 그러나 (당연하게도) 스케줄러는 백그라운드 스레드에서 실행되므로 OSIV가 적용되지 않는다. `@Transactional`이 닫히면 EntityManager도 닫혀 준영속 상태가 되므로, 스케줄러에서는 트랜잭션 경계를 더 신경써야 한다.
+
+---
+
+## 2. 강의 정원 수정의 동시성 처리
+
+**상태**: 결정됨
+
+### 컨텍스트
+
+`updateKlass()`는 JPA 더티 체킹으로 `maxCapacity`와 `remainingCapacity`를 수정하는 read-modify-write 구조였다.
+
+```java
+// 기존 구조 — Klass.update() 내부
+this.remainingCapacity += maxCapacity - this.maxCapacity;
+this.maxCapacity = maxCapacity;
+```
+
+반면 수강 신청의 `decreaseRemainingCapacity()`는 원자적 DB 쿼리로 처리한다.
+
+```java
+UPDATE Klass k SET k.remainingCapacity = k.remainingCapacity - 1
+WHERE k.id = :klassId AND k.remainingCapacity > 0
+```
+
+두 연산이 같은 행의 `remainingCapacity`를 서로 다른 방식으로 건드리기 때문에, 수강 신청과 정원 수정이 동시에 들어오면 Lost Update가 발생할 수 있다.
+
+### 결정
+
+정원 수정을 수강 신청과 동일하게 **원자적 DB 쿼리**로 처리한다.
+
+```java
+@Modifying(clearAutomatically = true)
+@Query("""
+    UPDATE Klass k
+    SET k.maxCapacity = :newMaxCapacity,
+        k.remainingCapacity = k.remainingCapacity + (:newMaxCapacity - k.maxCapacity)
+    WHERE k.id = :klassId
+""")
+int updateCapacity(@Param("klassId") Long klassId, @Param("newMaxCapacity") int newMaxCapacity);
+```
+
+`Klass.update()`에서 정원 필드 대입을 제거하고 검증만 수행한다. 실제 DB 반영은 `KlassService`에서 `updateCapacity()`를 호출해 처리한다.
+
+부가적으로, 원자적 쿼리로 전환하면서 강사가 실수로 정원 수정 요청을 동시에 두 번 보내는 경우의 중복 요청 경쟁도 함께 제거되었다.
+
+### 이유
+
+처음에는 강사의 중복 요청 문제만 보고 낙관적 락(`@Version`) 적용을 검토했다. 그러나 수강 신청(`decreaseRemainingCapacity`)이 이미 원자적 쿼리로 같은 행을 건드리고 있다는 점을 발견했다.
+낙관적 락은 정원 수정 간의 충돌만 막을 뿐, 수강 신청과 정원 수정 사이의 경쟁은 해결하지 못한다.
+
+두 연산을 모두 원자적 쿼리로 통일하면 DB가 행 단위로 직렬화하므로 모든 경쟁이 사라진다.
