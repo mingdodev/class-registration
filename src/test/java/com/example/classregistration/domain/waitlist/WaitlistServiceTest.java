@@ -44,9 +44,7 @@ class WaitlistServiceTest {
     @BeforeEach
     void setUp() {
         creator = mock(Creator.class);
-        given(creator.getId()).willReturn(1L);
         klassmate = mock(Klassmate.class);
-        given(klassmate.getId()).willReturn(1L);
     }
 
     // ===== joinWaitlist =====

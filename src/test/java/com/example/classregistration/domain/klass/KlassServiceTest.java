@@ -45,7 +45,6 @@ class KlassServiceTest {
     @BeforeEach
     void setUp() {
         creator = mock(Creator.class);
-        given(creator.getId()).willReturn(1L);
     }
 
     // ===== createKlass =====
@@ -92,6 +91,7 @@ class KlassServiceTest {
 
     @Test
     void DRAFT_강의를_모집_시작하면_OPEN_상태가_된다() {
+        given(creator.getId()).willReturn(1L);
         Klass klass = KlassFixture.초안_강의(creator);
         given(klassRepository.findById(1L)).willReturn(Optional.of(klass));
 
@@ -123,6 +123,7 @@ class KlassServiceTest {
 
     @Test
     void OPEN_강의를_모집_시작하면_예외가_발생한다() {
+        given(creator.getId()).willReturn(1L);
         Klass klass = KlassFixture.모집중_강의(creator);
         given(klassRepository.findById(1L)).willReturn(Optional.of(klass));
 
@@ -133,6 +134,7 @@ class KlassServiceTest {
 
     @Test
     void CLOSED_강의를_모집_시작하면_예외가_발생한다() {
+        given(creator.getId()).willReturn(1L);
         Klass klass = KlassFixture.마감된_강의(creator);
         given(klassRepository.findById(1L)).willReturn(Optional.of(klass));
 
@@ -145,6 +147,7 @@ class KlassServiceTest {
 
     @Test
     void DRAFT_강의의_제목을_수정하면_제목이_변경된다() {
+        given(creator.getId()).willReturn(1L);
         Klass klass = KlassFixture.초안_강의(creator);
         UpdateKlassRequest request = KlassRequestFixture.제목_수정_요청("수정된 강의");
         given(klassRepository.findById(1L)).willReturn(Optional.of(klass));
@@ -179,6 +182,7 @@ class KlassServiceTest {
 
     @Test
     void 모집중인_강의의_가격을_수정하려_하면_예외가_발생한다() {
+        given(creator.getId()).willReturn(1L);
         Klass klass = KlassFixture.모집중_강의(creator);
         UpdateKlassRequest request = KlassRequestFixture.가격_수정_요청(60000);
         given(klassRepository.findById(1L)).willReturn(Optional.of(klass));
@@ -190,6 +194,7 @@ class KlassServiceTest {
 
     @Test
     void 마감된_강의의_가격을_수정하려_하면_예외가_발생한다() {
+        given(creator.getId()).willReturn(1L);
         Klass klass = KlassFixture.마감된_강의(creator);
         UpdateKlassRequest request = KlassRequestFixture.가격_수정_요청(60000);
         given(klassRepository.findById(1L)).willReturn(Optional.of(klass));
@@ -201,6 +206,7 @@ class KlassServiceTest {
 
     @Test
     void 모집중인_강의의_정원을_줄이려_하면_예외가_발생한다() {
+        given(creator.getId()).willReturn(1L);
         Klass klass = KlassFixture.모집중_강의(creator);
         UpdateKlassRequest request = KlassRequestFixture.정원_감소_수정_요청(5);
         given(klassRepository.findById(1L)).willReturn(Optional.of(klass));
@@ -212,6 +218,7 @@ class KlassServiceTest {
 
     @Test
     void 마감된_강의의_정원을_줄이려_하면_예외가_발생한다() {
+        given(creator.getId()).willReturn(1L);
         Klass klass = KlassFixture.마감된_강의(creator);
         UpdateKlassRequest request = KlassRequestFixture.정원_감소_수정_요청(5);
         given(klassRepository.findById(1L)).willReturn(Optional.of(klass));
@@ -234,6 +241,7 @@ class KlassServiceTest {
 
     @Test
     void DRAFT_강의를_삭제하면_강의가_삭제된다() {
+        given(creator.getId()).willReturn(1L);
         Klass klass = KlassFixture.초안_강의(creator);
         given(klassRepository.findById(1L)).willReturn(Optional.of(klass));
 
@@ -244,6 +252,7 @@ class KlassServiceTest {
 
     @Test
     void OPEN_강의를_삭제하면_예외가_발생한다() {
+        given(creator.getId()).willReturn(1L);
         Klass klass = KlassFixture.모집중_강의(creator);
         given(klassRepository.findById(1L)).willReturn(Optional.of(klass));
 
@@ -254,6 +263,7 @@ class KlassServiceTest {
 
     @Test
     void CLOSED_강의를_삭제하면_예외가_발생한다() {
+        given(creator.getId()).willReturn(1L);
         Klass klass = KlassFixture.마감된_강의(creator);
         given(klassRepository.findById(1L)).willReturn(Optional.of(klass));
 
@@ -278,6 +288,7 @@ class KlassServiceTest {
 
     @Test
     void 강의_상세를_조회한다() {
+        given(creator.getId()).willReturn(1L);
         Klass klass = KlassFixture.모집중_강의(creator);
         given(klassRepository.findById(1L)).willReturn(Optional.of(klass));
 
@@ -324,6 +335,7 @@ class KlassServiceTest {
 
     @Test
     void 강의별_수강생_목록을_조회한다() {
+        given(creator.getId()).willReturn(1L);
         Klass klass = KlassFixture.모집중_강의(creator);
         Klassmate klassmate = mock(Klassmate.class);
         Enrollment enrollment = EnrollmentFixture.수강_확정된_수강신청(klassmate, klass);
