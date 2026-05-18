@@ -1,4 +1,4 @@
-package com.example.classregistration.domain.klassmate;
+package com.example.classregistration.domain.klassmate.repository;
 
 import com.example.classregistration.domain.klassmate.model.Klassmate;
 import org.springframework.data.jpa.repository.JpaRepository;

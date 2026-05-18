@@ -1,6 +1,6 @@
 package com.example.classregistration.global.scheduler;
 
-import com.example.classregistration.domain.waitlist.WaitlistEventQueue;
+import com.example.classregistration.domain.waitlist.publisher.WaitlistEventQueue;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.scheduling.annotation.Scheduled;

@@ -1,9 +1,10 @@
-package com.example.classregistration.domain.waitlist;
+package com.example.classregistration.domain.waitlist.service;
 
-import com.example.classregistration.domain.enrollment.EnrollmentRepository;
+import com.example.classregistration.domain.enrollment.repository.EnrollmentRepository;
 import com.example.classregistration.domain.enrollment.model.Enrollment;
-import com.example.classregistration.domain.klass.KlassRepository;
+import com.example.classregistration.domain.klass.repository.KlassRepository;
 import com.example.classregistration.domain.klass.model.Klass;
+import com.example.classregistration.domain.waitlist.repository.WaitlistRepository;
 import com.example.classregistration.domain.waitlist.model.Waitlist;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;

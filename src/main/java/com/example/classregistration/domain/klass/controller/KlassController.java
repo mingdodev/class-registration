@@ -1,6 +1,7 @@
-package com.example.classregistration.domain.klass;
+package com.example.classregistration.domain.klass.controller;
 
 import com.example.classregistration.domain.enrollment.model.Enrollment;
+import com.example.classregistration.domain.klass.service.KlassService;
 import com.example.classregistration.domain.klass.dto.*;
 import com.example.classregistration.domain.klass.model.Klass;
 import com.example.classregistration.domain.klass.model.KlassStatus;

@@ -1,4 +1,4 @@
-package com.example.classregistration.domain.creator;
+package com.example.classregistration.domain.creator.repository;
 
 import com.example.classregistration.domain.creator.model.Creator;
 import org.springframework.data.jpa.repository.JpaRepository;

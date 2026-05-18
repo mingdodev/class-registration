@@ -1,4 +1,4 @@
-package com.example.classregistration.domain.klass;
+package com.example.classregistration.domain.klass.repository;
 
 import com.example.classregistration.domain.klass.model.Klass;
 import com.example.classregistration.domain.klass.model.KlassStatus;

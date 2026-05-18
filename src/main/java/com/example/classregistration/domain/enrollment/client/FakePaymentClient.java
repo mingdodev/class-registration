@@ -1,4 +1,4 @@
-package com.example.classregistration.global.payment;
+package com.example.classregistration.domain.enrollment.client;
 
 import org.springframework.stereotype.Component;
 

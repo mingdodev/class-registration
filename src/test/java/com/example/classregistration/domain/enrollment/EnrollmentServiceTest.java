@@ -5,11 +5,13 @@ import com.example.classregistration.domain.enrollment.dto.CreateEnrollmentRespo
 import com.example.classregistration.domain.enrollment.model.CancelReason;
 import com.example.classregistration.domain.enrollment.model.Enrollment;
 import com.example.classregistration.domain.enrollment.model.EnrollmentStatus;
-import com.example.classregistration.domain.klass.KlassRepository;
+import com.example.classregistration.domain.enrollment.repository.EnrollmentRepository;
+import com.example.classregistration.domain.enrollment.service.EnrollmentService;
+import com.example.classregistration.domain.klass.repository.KlassRepository;
 import com.example.classregistration.domain.klass.model.Klass;
-import com.example.classregistration.domain.klassmate.KlassmateRepository;
+import com.example.classregistration.domain.klassmate.repository.KlassmateRepository;
 import com.example.classregistration.domain.klassmate.model.Klassmate;
-import com.example.classregistration.domain.waitlist.WaitlistEventPublisher;
+import com.example.classregistration.domain.waitlist.publisher.WaitlistEventPublisher;
 import com.example.classregistration.fixture.EnrollmentFixture;
 import com.example.classregistration.fixture.KlassFixture;
 import com.example.classregistration.global.exception.BusinessException;

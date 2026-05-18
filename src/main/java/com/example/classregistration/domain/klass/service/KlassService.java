@@ -1,14 +1,15 @@
-package com.example.classregistration.domain.klass;
+package com.example.classregistration.domain.klass.service;
 
-import com.example.classregistration.domain.creator.CreatorRepository;
+import com.example.classregistration.domain.creator.repository.CreatorRepository;
 import com.example.classregistration.domain.creator.model.Creator;
-import com.example.classregistration.domain.enrollment.EnrollmentRepository;
+import com.example.classregistration.domain.enrollment.repository.EnrollmentRepository;
 import com.example.classregistration.domain.enrollment.model.Enrollment;
 import com.example.classregistration.domain.klass.dto.CreateKlassRequest;
 import com.example.classregistration.domain.klass.dto.UpdateKlassRequest;
 import com.example.classregistration.domain.klass.model.Klass;
 import com.example.classregistration.domain.klass.model.KlassStatus;
-import com.example.classregistration.domain.waitlist.WaitlistEventPublisher;
+import com.example.classregistration.domain.klass.repository.KlassRepository;
+import com.example.classregistration.domain.waitlist.publisher.WaitlistEventPublisher;
 import com.example.classregistration.global.exception.BusinessException;
 import com.example.classregistration.global.exception.ErrorCode;
 import lombok.RequiredArgsConstructor;

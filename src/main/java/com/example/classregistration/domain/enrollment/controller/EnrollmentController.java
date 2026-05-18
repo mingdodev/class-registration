@@ -1,5 +1,6 @@
-package com.example.classregistration.domain.enrollment;
+package com.example.classregistration.domain.enrollment.controller;
 
+import com.example.classregistration.domain.enrollment.service.EnrollmentService;
 import com.example.classregistration.domain.enrollment.dto.CreateEnrollmentResponse;
 import com.example.classregistration.domain.enrollment.dto.MyEnrollmentResponse;
 import com.example.classregistration.domain.enrollment.dto.MyEnrollmentStatusResponse;

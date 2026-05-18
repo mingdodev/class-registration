@@ -1,5 +1,6 @@
-package com.example.classregistration.domain.waitlist;
+package com.example.classregistration.domain.waitlist.publisher;
 
+import com.example.classregistration.domain.waitlist.service.WaitlistProcessorService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;

@@ -1,21 +1,22 @@
-package com.example.classregistration.domain.enrollment;
+package com.example.classregistration.domain.enrollment.service;
 
 import com.example.classregistration.domain.enrollment.dto.CreateEnrollmentResponse;
 import com.example.classregistration.domain.enrollment.dto.MyEnrollmentResponse;
 import com.example.classregistration.domain.enrollment.dto.MyEnrollmentStatusResponse;
 import com.example.classregistration.domain.enrollment.model.Enrollment;
 import com.example.classregistration.domain.enrollment.model.EnrollmentStatus;
+import com.example.classregistration.domain.enrollment.repository.EnrollmentRepository;
 import com.example.classregistration.global.response.CursorPage;
 import org.springframework.data.domain.PageRequest;
-import com.example.classregistration.domain.klass.KlassRepository;
+import com.example.classregistration.domain.klass.repository.KlassRepository;
 import com.example.classregistration.domain.klass.model.Klass;
-import com.example.classregistration.domain.klassmate.KlassmateRepository;
+import com.example.classregistration.domain.klassmate.repository.KlassmateRepository;
 import com.example.classregistration.domain.klassmate.model.Klassmate;
 import com.example.classregistration.domain.klass.model.KlassStatus;
-import com.example.classregistration.domain.waitlist.WaitlistEventPublisher;
+import com.example.classregistration.domain.waitlist.publisher.WaitlistEventPublisher;
 import com.example.classregistration.global.exception.BusinessException;
 import com.example.classregistration.global.exception.ErrorCode;
-import com.example.classregistration.global.payment.PaymentClient;
+import com.example.classregistration.domain.enrollment.client.PaymentClient;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;

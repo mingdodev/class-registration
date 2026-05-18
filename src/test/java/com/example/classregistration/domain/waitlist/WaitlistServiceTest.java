@@ -1,13 +1,14 @@
 package com.example.classregistration.domain.waitlist;
 
 import com.example.classregistration.domain.creator.model.Creator;
-import com.example.classregistration.domain.klass.KlassRepository;
+import com.example.classregistration.domain.klass.repository.KlassRepository;
 import com.example.classregistration.domain.klass.model.Klass;
-import com.example.classregistration.domain.klass.model.KlassStatus;
-import com.example.classregistration.domain.klassmate.KlassmateRepository;
+import com.example.classregistration.domain.klassmate.repository.KlassmateRepository;
 import com.example.classregistration.domain.klassmate.model.Klassmate;
 import com.example.classregistration.domain.waitlist.dto.MyWaitlistStatusResponse;
 import com.example.classregistration.domain.waitlist.model.Waitlist;
+import com.example.classregistration.domain.waitlist.repository.WaitlistRepository;
+import com.example.classregistration.domain.waitlist.service.WaitlistService;
 import com.example.classregistration.fixture.KlassFixture;
 import com.example.classregistration.global.exception.BusinessException;
 import com.example.classregistration.global.exception.ErrorCode;

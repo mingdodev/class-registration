@@ -1,4 +1,4 @@
-package com.example.classregistration.domain.enrollment;
+package com.example.classregistration.domain.enrollment.repository;
 
 import com.example.classregistration.domain.enrollment.model.Enrollment;
 import com.example.classregistration.domain.enrollment.model.EnrollmentStatus;

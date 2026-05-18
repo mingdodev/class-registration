@@ -1,4 +1,4 @@
-package com.example.classregistration.domain.waitlist;
+package com.example.classregistration.domain.waitlist.repository;
 
 import com.example.classregistration.domain.waitlist.model.Waitlist;
 import org.springframework.data.jpa.repository.JpaRepository;
