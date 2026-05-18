@@ -1,6 +1,8 @@
 package com.example.classregistration.domain.klass.model;
 
 import com.example.classregistration.domain.creator.model.Creator;
+import com.example.classregistration.global.exception.BusinessException;
+import com.example.classregistration.global.exception.ErrorCode;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Getter;
@@ -59,6 +61,8 @@ public class Klass {
 
     public static Klass create(Creator creator, String title, String description, int price,
                                 int maxCapacity, LocalDate startDate, LocalDate endDate) {
+        if (title.length() > 20) throw new BusinessException(ErrorCode.KLASS_TITLE_TOO_LONG);
+        if (maxCapacity < 1) throw new BusinessException(ErrorCode.KLASS_CAPACITY_INVALID);
         Klass klass = new Klass();
         klass.creator = creator;
         klass.title = title;
@@ -70,5 +74,52 @@ public class Klass {
         klass.startDate = startDate;
         klass.endDate = endDate;
         return klass;
+    }
+
+    public boolean isOwnedBy(Long creatorId) {
+        return this.creator.getId().equals(creatorId);
+    }
+
+    public void open() {
+        if (status != KlassStatus.DRAFT) throw new BusinessException(ErrorCode.KLASS_NOT_DRAFT);
+        this.status = KlassStatus.OPEN;
+    }
+
+    public void update(String title, String description, Integer price, Integer maxCapacity,
+                       LocalDate startDate, LocalDate endDate) {
+        if (title != null) {
+            if (title.length() > 20) throw new BusinessException(ErrorCode.KLASS_TITLE_TOO_LONG);
+            this.title = title;
+        }
+        if (description != null) this.description = description;
+        if (price != null) {
+            if (status != KlassStatus.DRAFT) throw new BusinessException(ErrorCode.KLASS_PRICE_UPDATE_NOT_ALLOWED);
+            this.price = price;
+        }
+        if (maxCapacity != null) {
+            if (maxCapacity < 1) throw new BusinessException(ErrorCode.KLASS_CAPACITY_INVALID);
+            if (status != KlassStatus.DRAFT && maxCapacity < this.maxCapacity) {
+                throw new BusinessException(ErrorCode.KLASS_CAPACITY_DECREASE_NOT_ALLOWED);
+            }
+            this.remainingCapacity += maxCapacity - this.maxCapacity;
+            this.maxCapacity = maxCapacity;
+        }
+        if (startDate != null) this.startDate = startDate;
+        if (endDate != null) this.endDate = endDate;
+    }
+
+    public void validateDeletable() {
+        if (status != KlassStatus.DRAFT) throw new BusinessException(ErrorCode.KLASS_NOT_DELETABLE);
+    }
+
+    public void validateEnrollable() {
+        if (status != KlassStatus.OPEN) throw new BusinessException(ErrorCode.KLASS_NOT_OPEN);
+        if (endDate != null && LocalDate.now().isAfter(endDate)) throw new BusinessException(ErrorCode.KLASS_PERIOD_ENDED);
+    }
+
+    public void validateWaitlistJoinable() {
+        if (status != KlassStatus.CLOSED || (endDate != null && LocalDate.now().isAfter(endDate))) {
+            throw new BusinessException(ErrorCode.WAITLIST_NOT_AVAILABLE);
+        }
     }
 }

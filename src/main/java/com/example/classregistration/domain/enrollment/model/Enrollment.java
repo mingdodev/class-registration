@@ -2,6 +2,8 @@ package com.example.classregistration.domain.enrollment.model;
 
 import com.example.classregistration.domain.klass.model.Klass;
 import com.example.classregistration.domain.klassmate.model.Klassmate;
+import com.example.classregistration.global.exception.BusinessException;
+import com.example.classregistration.global.exception.ErrorCode;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Getter;
@@ -10,6 +12,7 @@ import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 
 @Entity
@@ -53,5 +56,24 @@ public class Enrollment {
         enrollment.klass = klass;
         enrollment.status = EnrollmentStatus.PENDING;
         return enrollment;
+    }
+
+    public void confirm() {
+        if (status != EnrollmentStatus.PENDING) throw new BusinessException(ErrorCode.ENROLLMENT_NOT_PENDING);
+        if (createdAt.isBefore(LocalDateTime.now().minusHours(24))) throw new BusinessException(ErrorCode.ENROLLMENT_PAYMENT_EXPIRED);
+        this.status = EnrollmentStatus.CONFIRMED;
+    }
+
+    public void cancel() {
+        if (status == EnrollmentStatus.CANCELLED) throw new BusinessException(ErrorCode.ENROLLMENT_ALREADY_CANCELLED);
+        if (status == EnrollmentStatus.CONFIRMED) validateCancelDeadline();
+        this.status = EnrollmentStatus.CANCELLED;
+        this.cancelReason = CancelReason.USER_REQUESTED;
+    }
+
+    private void validateCancelDeadline() {
+        LocalDate startDate = klass.getStartDate();
+        if (startDate == null) return;
+        if (LocalDate.now().isAfter(startDate.minusDays(3))) throw new BusinessException(ErrorCode.ENROLLMENT_CANCEL_NOT_ALLOWED);
     }
 }
