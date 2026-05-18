@@ -15,7 +15,12 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.example.classregistration.domain.klass.dto.KlassSummaryResponse;
+import com.example.classregistration.global.response.CursorPage;
+import org.springframework.data.domain.PageRequest;
+
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.List;
 
 @Service
@@ -65,6 +70,15 @@ public class KlassService {
         validateOwnership(klass, creatorId);
         klass.validateDeletable();
         klassRepository.delete(klass);
+    }
+
+    public CursorPage<KlassSummaryResponse> getKlasses(KlassStatus status, String cursor, int size) {
+        LocalDateTime cursorTime = cursor != null ? LocalDateTime.parse(cursor) : null;
+        List<Klass> klasses = klassRepository.findPublicKlasses(status, cursorTime, PageRequest.of(0, size + 1));
+        boolean hasNext = klasses.size() > size;
+        List<Klass> content = hasNext ? klasses.subList(0, size) : klasses;
+        String nextCursor = hasNext ? content.get(content.size() - 1).getCreatedAt().toString() : null;
+        return new CursorPage<>(content.stream().map(KlassSummaryResponse::from).toList(), nextCursor, hasNext);
     }
 
     public Klass getKlass(Long klassId) {
