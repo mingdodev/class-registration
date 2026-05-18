@@ -71,6 +71,11 @@ public class Enrollment {
         this.cancelReason = CancelReason.USER_REQUESTED;
     }
 
+    public void expirePayment() {
+        this.status = EnrollmentStatus.CANCELLED;
+        this.cancelReason = CancelReason.PAYMENT_TIMEOUT;
+    }
+
     private void validateCancelDeadline() {
         LocalDate startDate = klass.getStartDate();
         if (startDate == null) return;

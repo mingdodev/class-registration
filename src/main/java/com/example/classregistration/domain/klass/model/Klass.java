@@ -122,4 +122,12 @@ public class Klass {
             throw new BusinessException(ErrorCode.WAITLIST_NOT_AVAILABLE);
         }
     }
+
+    public boolean isPeriodEnded() {
+        return endDate != null && LocalDate.now().isAfter(endDate);
+    }
+
+    public void reopen() {
+        this.status = KlassStatus.OPEN;
+    }
 }

@@ -15,6 +15,9 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDateTime;
+import java.util.List;
+
 @Slf4j
 @Service
 @RequiredArgsConstructor
@@ -64,6 +67,28 @@ public class EnrollmentService {
                 waitlistEventPublisher.publish(klassId);
             } catch (Exception e) {
                 log.error("대기열 이벤트 발행 실패: klassId={}", klassId, e);
+            }
+        }
+    }
+
+    @Transactional
+    public void cancelExpiredPendingEnrollments() {
+        List<Enrollment> expired = enrollmentRepository.findExpiredPendingEnrollments(
+                LocalDateTime.now().minusHours(24));
+
+        for (Enrollment enrollment : expired) {
+            Long klassId = enrollment.getKlass().getId();
+            KlassStatus klassStatus = enrollment.getKlass().getStatus();
+            enrollment.expirePayment();
+            klassRepository.increaseRemainingCapacity(klassId);
+
+            // CLOSED 상태에서만 대기열 이벤트 발행
+            if (klassStatus == KlassStatus.CLOSED) {
+                try {
+                    waitlistEventPublisher.publish(klassId);
+                } catch (Exception e) {
+                    log.error("대기열 이벤트 발행 실패: klassId={}", klassId, e);
+                }
             }
         }
     }
