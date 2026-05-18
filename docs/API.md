@@ -112,7 +112,7 @@ RFC 9457 표준을 따르는 ProblemDetail 포맷으로 응답합니다.
 | `ENROLLMENT_NOT_PENDING` | 409 | PENDING 상태가 아닌 수강 신청을 결제 처리하려 함 |
 | `ENROLLMENT_PAYMENT_EXPIRED` | 409 | 결제 가능 시간(24시간)이 지남 |
 | `ENROLLMENT_CANCEL_NOT_ALLOWED` | 409 | 취소 가능 기간(강의 시작일 3일 전)이 지남 |
-| `ENROLLMENT_NOT_CONFIRMED` | 409 | CONFIRMED 상태가 아닌 수강 신청을 취소하려 함 |
+| `ENROLLMENT_ALREADY_CANCELLED` | 409 | 이미 취소된 수강 신청을 취소하려 함 |
 
 ### 대기열 (Waitlist)
 
@@ -515,7 +515,7 @@ X-Klassmate-Id: {수강생 ID}
 
 ### DELETE /api/enrollments/{enrollmentId}
 
-수강을 취소한다. CONFIRMED 상태이고 강의 시작일 3일 전까지만 취소할 수 있다.
+수강을 취소한다. PENDING 상태는 언제든 취소할 수 있다. CONFIRMED 상태는 강의 시작일 3일 전까지만 취소할 수 있다.
 
 #### 응답 본문 (200 OK)
 
@@ -532,7 +532,7 @@ X-Klassmate-Id: {수강생 ID}
 | 상황 | 코드 | HTTP |
 |---|---|---|
 | 수강 신청 없음 | `ENROLLMENT_NOT_FOUND` | 404 |
-| CONFIRMED 상태가 아님 | `ENROLLMENT_NOT_CONFIRMED` | 409 |
+| 이미 취소된 수강 신청 | `ENROLLMENT_ALREADY_CANCELLED` | 409 |
 | 취소 가능 기간 초과 | `ENROLLMENT_CANCEL_NOT_ALLOWED` | 409 |
 
 ---

@@ -27,7 +27,7 @@ public enum ErrorCode {
     ENROLLMENT_NOT_PENDING(HttpStatus.CONFLICT, "결제 대기 중인 수강 신청이 아닙니다."),
     ENROLLMENT_PAYMENT_EXPIRED(HttpStatus.CONFLICT, "결제 가능 시간(24시간)이 지났습니다."),
     ENROLLMENT_CANCEL_NOT_ALLOWED(HttpStatus.CONFLICT, "취소 가능 기간(강의 시작일 3일 전)이 지났습니다."),
-    ENROLLMENT_NOT_CONFIRMED(HttpStatus.CONFLICT, "수강이 확정된 신청만 취소할 수 있습니다."),
+    ENROLLMENT_ALREADY_CANCELLED(HttpStatus.CONFLICT, "이미 취소된 수강 신청입니다."),
 
     // Waitlist
     WAITLIST_NOT_AVAILABLE(HttpStatus.CONFLICT, "정원이 마감된 강의에만 대기열 등록이 가능합니다."),
