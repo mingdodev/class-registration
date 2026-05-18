@@ -10,25 +10,24 @@
 - [에러 응답 포맷](#에러-응답-포맷)
 - [에러 코드](#에러-코드)
 
-| 도메인 | 메서드 | 엔드포인트 | 설명 |
-|---|---|---|---|
-| 강의 | GET | [/api/klasses](#get-apiklasses) | 전체 강의 목록 조회 |
-| 강의 | GET | [/api/klasses/{klassId}](#get-apiklassesklassid) | 강의 상세 조회 |
-| 강의 | PATCH | [/api/klasses/{klassId}](#patch-apiklassesklassid) | 강의 수정 |
-| 강의 | DELETE | [/api/klasses/{klassId}](#delete-apiklassesklassid) | 강의 삭제 |
-| 강사 | POST | [/api/klasses](#post-apiklasses) | 강의 초안 등록 |
-| 강사 | PATCH | [/api/klasses/{klassId}/open](#patch-apiklassesklassidopen) | 강의 모집 시작 |
-| 강사 | GET | [/api/creators/me/klasses](#get-apicreatorsmeklasses) | 내 강의 목록 조회 |
-| 강사 | GET | [/api/klasses/{klassId}/klassmates](#get-apiklassesklassidklassmates) | 강의별 수강생 목록 조회 |
-| 수강 신청 | GET | [/api/klasses/{klassId}/enrollments/me](#get-apiklassesklassidenrollmentsme) | 수강 신청 여부 확인 |
-| 수강 신청 | POST | [/api/klasses/{klassId}/enrollments](#post-apiklassesklassidenrollments) | 수강 신청 |
-| 수강 신청 | POST | [/api/enrollments/{enrollmentId}/confirm](#post-apienrollmentsenrollmentidconfirm) | 결제 완료 (수강 확정) |
-| 수강 신청 | DELETE | [/api/enrollments/{enrollmentId}](#delete-apienrollmentsenrollmentid) | 수강 취소 |
-| 수강 신청 | GET | [/api/klassmates/me/enrollments](#get-apiklassmatesmoenrollments) | 내 수강 신청 목록 조회 |
-| 대기열 | POST | [/api/klasses/{klassId}/waitlist](#post-apiklassesklassidwaitlist) | 대기열 등록 |
-| 대기열 | GET | [/api/klasses/{klassId}/waitlist/me](#get-apiklassesklassidwaitlistme) | 대기열 등록 여부 확인 |
-| 대기열 | DELETE | [/api/klasses/{klassId}/waitlist](#delete-apiklassesklassidwaitlist) | 대기열 등록 취소 |
-
+| 도메인 | Actor | 메서드 | 엔드포인트 | 설명 |
+|---|---|---|---|---|
+| Klass | Public | GET | [/api/klasses](#get-apiklasses) | 전체 강의 목록 조회 |
+| Klass | Public | GET | [/api/klasses/{klassId}](#get-apiklassesklassid) | 강의 상세 조회 |
+| Klass | Creator | PATCH | [/api/klasses/{klassId}](#patch-apiklassesklassid) | 강의 수정 |
+| Klass | Creator | DELETE | [/api/klasses/{klassId}](#delete-apiklassesklassid) | 강의 삭제 |
+| Klass | Creator | POST | [/api/klasses](#post-apiklasses) | 강의 초안 등록 |
+| Klass | Creator | PATCH | [/api/klasses/{klassId}/open](#patch-apiklassesklassidopen) | 강의 모집 시작 |
+| Klass | Creator | GET | [/api/creators/me/klasses](#get-apicreatorsmeklasses) | 내 강의 목록 조회 |
+| Klass | Creator | GET | [/api/klasses/{klassId}/klassmates](#get-apiklassesklassidklassmates) | 강의별 수강생 목록 조회 |
+| Enrollment | Klassmate | GET | [/api/klasses/{klassId}/enrollments/me](#get-apiklassesklassidenrollmentsme) | 수강 신청 여부 확인 |
+| Enrollment | Klassmate | POST | [/api/klasses/{klassId}/enrollments](#post-apiklassesklassidenrollments) | 수강 신청 |
+| Enrollment | Klassmate | POST | [/api/enrollments/{enrollmentId}/confirm](#post-apienrollmentsenrollmentidconfirm) | 결제 완료 (수강 확정) |
+| Enrollment | Klassmate | DELETE | [/api/enrollments/{enrollmentId}](#delete-apienrollmentsenrollmentid) | 수강 취소 |
+| Enrollment | Klassmate | GET | [/api/klassmates/me/enrollments](#get-apiklassmatesmoenrollments) | 내 수강 신청 목록 조회 |
+| Waitlist | Klassmate | POST | [/api/klasses/{klassId}/waitlist](#post-apiklassesklassidwaitlist) | 대기열 등록 |
+| Waitlist | Klassmate | GET | [/api/klasses/{klassId}/waitlist/me](#get-apiklassesklassidwaitlistme) | 대기열 등록 여부 확인 |
+| Waitlist | Klassmate | DELETE | [/api/klasses/{klassId}/waitlist](#delete-apiklassesklassidwaitlist) | 대기열 등록 취소 |
 ---
 
 ## 공통 응답 포맷
