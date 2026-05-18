@@ -28,4 +28,8 @@ public class KlassRequestFixture {
     public static UpdateKlassRequest 정원_감소_수정_요청(int maxCapacity) {
         return new UpdateKlassRequest(null, null, null, maxCapacity, null, null);
     }
+
+    public static UpdateKlassRequest 정원_증가_수정_요청(int maxCapacity) {
+        return new UpdateKlassRequest(null, null, null, maxCapacity, null, null);
+    }
 }

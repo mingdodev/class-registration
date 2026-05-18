@@ -19,7 +19,7 @@ public class KlassFixture {
         return klass;
     }
 
-    public static Klass 마감된_강의(Creator creator) {
+    public static Klass 수강_기간이_종료되지_않은_마감된_강의(Creator creator) {
         Klass klass = 초안_강의(creator);
         ReflectionTestUtils.setField(klass, "status", KlassStatus.CLOSED);
         ReflectionTestUtils.setField(klass, "remainingCapacity", 0);

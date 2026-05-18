@@ -6,6 +6,7 @@ import com.example.classregistration.domain.enrollment.EnrollmentRepository;
 import com.example.classregistration.domain.enrollment.model.Enrollment;
 import com.example.classregistration.domain.klass.dto.CreateKlassRequest;
 import com.example.classregistration.domain.klass.dto.UpdateKlassRequest;
+import com.example.classregistration.domain.waitlist.WaitlistEventPublisher;
 import com.example.classregistration.domain.klass.model.Klass;
 import com.example.classregistration.domain.klass.model.KlassStatus;
 import com.example.classregistration.domain.klassmate.model.Klassmate;
@@ -28,6 +29,7 @@ import java.util.Optional;
 import static org.assertj.core.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.BDDMockito.*;
+import static org.mockito.Mockito.times;
 
 @ExtendWith(MockitoExtension.class)
 class KlassServiceTest {
@@ -38,6 +40,8 @@ class KlassServiceTest {
     private CreatorRepository creatorRepository;
     @Mock
     private EnrollmentRepository enrollmentRepository;
+    @Mock
+    private WaitlistEventPublisher waitlistEventPublisher;
     @InjectMocks
     private KlassService klassService;
 
@@ -136,7 +140,7 @@ class KlassServiceTest {
     @Test
     void CLOSED_강의를_모집_시작하면_예외가_발생한다() {
         given(creator.getId()).willReturn(1L);
-        Klass klass = KlassFixture.마감된_강의(creator);
+        Klass klass = KlassFixture.수강_기간이_종료되지_않은_마감된_강의(creator);
         given(klassRepository.findById(1L)).willReturn(Optional.of(klass));
 
         assertThatThrownBy(() -> klassService.openKlass(1L, 1L))
@@ -194,6 +198,43 @@ class KlassServiceTest {
     }
 
     @Test
+    void CLOSED_강의_정원을_늘리면_증가한_수만큼_이벤트가_발행된다() {
+        // 기본 maxCapacity=20, 25로 증가 → 이벤트 5회
+        given(creator.getId()).willReturn(1L);
+        Klass klass = KlassFixture.수강_기간이_종료되지_않은_마감된_강의(creator);
+        UpdateKlassRequest request = KlassRequestFixture.정원_증가_수정_요청(25);
+        given(klassRepository.findById(1L)).willReturn(Optional.of(klass));
+
+        klassService.updateKlass(1L, 1L, request);
+
+        then(waitlistEventPublisher).should(times(5)).publish(1L);
+    }
+
+    @Test
+    void DRAFT_강의_정원을_늘려도_이벤트가_발행되지_않는다() {
+        given(creator.getId()).willReturn(1L);
+        Klass klass = KlassFixture.초안_강의(creator);
+        UpdateKlassRequest request = KlassRequestFixture.정원_증가_수정_요청(25);
+        given(klassRepository.findById(1L)).willReturn(Optional.of(klass));
+
+        klassService.updateKlass(1L, 1L, request);
+
+        then(waitlistEventPublisher).shouldHaveNoInteractions();
+    }
+
+    @Test
+    void OPEN_강의_정원을_늘려도_이벤트가_발행되지_않는다() {
+        given(creator.getId()).willReturn(1L);
+        Klass klass = KlassFixture.모집중_강의(creator);
+        UpdateKlassRequest request = KlassRequestFixture.정원_증가_수정_요청(25);
+        given(klassRepository.findById(1L)).willReturn(Optional.of(klass));
+
+        klassService.updateKlass(1L, 1L, request);
+
+        then(waitlistEventPublisher).shouldHaveNoInteractions();
+    }
+
+    @Test
     void 모집중인_강의의_가격을_수정하려_하면_예외가_발생한다() {
         given(creator.getId()).willReturn(1L);
         Klass klass = KlassFixture.모집중_강의(creator);
@@ -208,7 +249,7 @@ class KlassServiceTest {
     @Test
     void 마감된_강의의_가격을_수정하려_하면_예외가_발생한다() {
         given(creator.getId()).willReturn(1L);
-        Klass klass = KlassFixture.마감된_강의(creator);
+        Klass klass = KlassFixture.수강_기간이_종료되지_않은_마감된_강의(creator);
         UpdateKlassRequest request = KlassRequestFixture.가격_수정_요청(60000);
         given(klassRepository.findById(1L)).willReturn(Optional.of(klass));
 
@@ -232,7 +273,7 @@ class KlassServiceTest {
     @Test
     void 마감된_강의의_정원을_줄이려_하면_예외가_발생한다() {
         given(creator.getId()).willReturn(1L);
-        Klass klass = KlassFixture.마감된_강의(creator);
+        Klass klass = KlassFixture.수강_기간이_종료되지_않은_마감된_강의(creator);
         UpdateKlassRequest request = KlassRequestFixture.정원_감소_수정_요청(5);
         given(klassRepository.findById(1L)).willReturn(Optional.of(klass));
 
@@ -277,7 +318,7 @@ class KlassServiceTest {
     @Test
     void CLOSED_강의를_삭제하면_예외가_발생한다() {
         given(creator.getId()).willReturn(1L);
-        Klass klass = KlassFixture.마감된_강의(creator);
+        Klass klass = KlassFixture.수강_기간이_종료되지_않은_마감된_강의(creator);
         given(klassRepository.findById(1L)).willReturn(Optional.of(klass));
 
         assertThatThrownBy(() -> klassService.deleteKlass(1L, 1L))

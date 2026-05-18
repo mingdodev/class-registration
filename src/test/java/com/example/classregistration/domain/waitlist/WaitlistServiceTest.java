@@ -51,7 +51,7 @@ class WaitlistServiceTest {
 
     @Test
     void CLOSED_강의에_대기열_등록을_하면_대기열에_추가된다() {
-        Klass klass = KlassFixture.마감된_강의(creator);
+        Klass klass = KlassFixture.수강_기간이_종료되지_않은_마감된_강의(creator);
         given(klassRepository.findById(1L)).willReturn(Optional.of(klass));
         given(waitlistRepository.existsByKlassmateIdAndKlassId(1L, 1L)).willReturn(false);
         given(klassmateRepository.getReferenceById(1L)).willReturn(klassmate);
@@ -92,7 +92,7 @@ class WaitlistServiceTest {
 
     @Test
     void 이미_대기열에_등록된_경우_예외가_발생한다() {
-        Klass klass = KlassFixture.마감된_강의(creator);
+        Klass klass = KlassFixture.수강_기간이_종료되지_않은_마감된_강의(creator);
         given(klassRepository.findById(1L)).willReturn(Optional.of(klass));
         given(waitlistRepository.existsByKlassmateIdAndKlassId(1L, 1L)).willReturn(true);
 
@@ -114,7 +114,7 @@ class WaitlistServiceTest {
 
     @Test
     void 대기열_등록을_취소하면_대기열에서_삭제된다() {
-        Klass klass = KlassFixture.마감된_강의(creator);
+        Klass klass = KlassFixture.수강_기간이_종료되지_않은_마감된_강의(creator);
         Waitlist waitlist = Waitlist.create(klassmate, klass);
         given(klassRepository.findById(1L)).willReturn(Optional.of(klass));
         given(waitlistRepository.findByKlassmateIdAndKlassId(1L, 1L)).willReturn(Optional.of(waitlist));
@@ -126,7 +126,7 @@ class WaitlistServiceTest {
 
     @Test
     void 대기열에_등록되지_않은_경우_취소하면_예외가_발생한다() {
-        Klass klass = KlassFixture.마감된_강의(creator);
+        Klass klass = KlassFixture.수강_기간이_종료되지_않은_마감된_강의(creator);
         given(klassRepository.findById(1L)).willReturn(Optional.of(klass));
         given(waitlistRepository.findByKlassmateIdAndKlassId(1L, 1L)).willReturn(Optional.empty());
 
@@ -148,7 +148,7 @@ class WaitlistServiceTest {
 
     @Test
     void 대기열에_등록된_경우_등록_정보를_반환한다() {
-        Klass klass = KlassFixture.마감된_강의(creator);
+        Klass klass = KlassFixture.수강_기간이_종료되지_않은_마감된_강의(creator);
         Waitlist waitlist = Waitlist.create(klassmate, klass);
         ReflectionTestUtils.setField(waitlist, "createdAt", LocalDateTime.now().minusHours(1));
         given(klassRepository.findById(1L)).willReturn(Optional.of(klass));
@@ -162,7 +162,7 @@ class WaitlistServiceTest {
 
     @Test
     void 대기열에_등록되지_않은_경우_미등록_정보를_반환한다() {
-        Klass klass = KlassFixture.마감된_강의(creator);
+        Klass klass = KlassFixture.수강_기간이_종료되지_않은_마감된_강의(creator);
         given(klassRepository.findById(1L)).willReturn(Optional.of(klass));
         given(waitlistRepository.findByKlassmateIdAndKlassId(1L, 1L)).willReturn(Optional.empty());
 

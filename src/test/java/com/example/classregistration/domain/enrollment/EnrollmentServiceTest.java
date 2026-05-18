@@ -9,6 +9,7 @@ import com.example.classregistration.domain.klass.KlassRepository;
 import com.example.classregistration.domain.klass.model.Klass;
 import com.example.classregistration.domain.klassmate.KlassmateRepository;
 import com.example.classregistration.domain.klassmate.model.Klassmate;
+import com.example.classregistration.domain.waitlist.WaitlistEventPublisher;
 import com.example.classregistration.fixture.EnrollmentFixture;
 import com.example.classregistration.fixture.KlassFixture;
 import com.example.classregistration.global.exception.BusinessException;
@@ -39,6 +40,8 @@ class EnrollmentServiceTest {
     private KlassmateRepository klassmateRepository;
     @Mock
     private EnrollmentRepository enrollmentRepository;
+    @Mock
+    private WaitlistEventPublisher waitlistEventPublisher;
     @InjectMocks
     private EnrollmentService enrollmentService;
 
@@ -202,7 +205,8 @@ class EnrollmentServiceTest {
 
     @Test
     void 시작일_3일_이전에_수강을_취소하면_CANCELLED_상태가_된다() {
-        Klass klass = KlassFixture.시작일이_5일_후인_강의(creator); // 마감일: 오늘 + 2일 → 취소 가능
+        Klass klass = KlassFixture.시작일이_5일_후인_강의(creator); // OPEN, 마감일: 오늘 + 2일 → 취소 가능
+        ReflectionTestUtils.setField(klass, "id", 1L);
         Enrollment enrollment = EnrollmentFixture.수강_확정된_수강신청(klassmate, klass);
         given(enrollmentRepository.findByIdAndKlassmateId(1L, 1L)).willReturn(Optional.of(enrollment));
 
@@ -210,6 +214,8 @@ class EnrollmentServiceTest {
 
         assertThat(enrollment.getStatus()).isEqualTo(EnrollmentStatus.CANCELLED);
         assertThat(enrollment.getCancelReason()).isEqualTo(CancelReason.USER_REQUESTED);
+        then(klassRepository).should().increaseRemainingCapacity(1L);
+        then(waitlistEventPublisher).shouldHaveNoInteractions(); // OPEN → 대기열 이벤트 불필요
     }
 
     @Test
@@ -225,7 +231,8 @@ class EnrollmentServiceTest {
 
     @Test
     void 수강_기간이_무제한인_강의의_수강을_취소하면_언제든_취소가_가능하다() {
-        Klass klass = KlassFixture.모집중_강의(creator); // startDate = null
+        Klass klass = KlassFixture.모집중_강의(creator); // OPEN, startDate = null
+        ReflectionTestUtils.setField(klass, "id", 1L);
         Enrollment enrollment = EnrollmentFixture.수강_확정된_수강신청(klassmate, klass);
         given(enrollmentRepository.findByIdAndKlassmateId(1L, 1L)).willReturn(Optional.of(enrollment));
 
@@ -233,6 +240,8 @@ class EnrollmentServiceTest {
 
         assertThat(enrollment.getCancelReason()).isEqualTo(CancelReason.USER_REQUESTED);
         assertThat(enrollment.getStatus()).isEqualTo(EnrollmentStatus.CANCELLED);
+        then(klassRepository).should().increaseRemainingCapacity(1L);
+        then(waitlistEventPublisher).shouldHaveNoInteractions(); // OPEN → 대기열 이벤트 불필요
     }
 
     @Test
@@ -246,7 +255,8 @@ class EnrollmentServiceTest {
 
     @Test
     void PENDING_수강신청은_취소_가능_기간과_관계없이_취소할_수_있다() {
-        Klass klass = KlassFixture.시작일이_2일_후인_강의(creator); // CONFIRMED면 취소 불가
+        Klass klass = KlassFixture.시작일이_2일_후인_강의(creator); // OPEN, CONFIRMED면 취소 불가
+        ReflectionTestUtils.setField(klass, "id", 1L);
         Enrollment enrollment = EnrollmentFixture.결제_대기중_수강신청(klassmate, klass);
         given(enrollmentRepository.findByIdAndKlassmateId(1L, 1L)).willReturn(Optional.of(enrollment));
 
@@ -254,6 +264,38 @@ class EnrollmentServiceTest {
 
         assertThat(enrollment.getCancelReason()).isEqualTo(CancelReason.USER_REQUESTED);
         assertThat(enrollment.getStatus()).isEqualTo(EnrollmentStatus.CANCELLED);
+        then(klassRepository).should().increaseRemainingCapacity(1L);
+        then(waitlistEventPublisher).shouldHaveNoInteractions(); // POPEN 강의 → 대기열 이벤트 불필요
+    }
+
+    @Test
+    void CLOSED_강의_수강을_취소하면_정원이_복구되고_이벤트가_발행된다() {
+        // ADR-04: CLOSED 상태에서만 대기열 이벤트 발행
+        Klass klass = KlassFixture.수강_기간이_종료되지_않은_마감된_강의(creator); // CLOSED, startDate=null → 취소 가능
+        ReflectionTestUtils.setField(klass, "id", 1L);
+        Enrollment enrollment = EnrollmentFixture.수강_확정된_수강신청(klassmate, klass);
+        given(enrollmentRepository.findByIdAndKlassmateId(1L, 1L)).willReturn(Optional.of(enrollment));
+
+        enrollmentService.cancelEnrollment(1L, 1L);
+
+        assertThat(enrollment.getStatus()).isEqualTo(EnrollmentStatus.CANCELLED);
+        then(klassRepository).should().increaseRemainingCapacity(1L);
+        then(waitlistEventPublisher).should().publish(1L);
+    }
+
+    @Test
+    void 이벤트_발행에_실패해도_취소와_정원_복구는_완료된다() {
+        // ADR-04: 대기열 처리 실패가 취소에 영향을 주어서는 안 됨
+        Klass klass = KlassFixture.수강_기간이_종료되지_않은_마감된_강의(creator); // CLOSED여야 publish가 호출됨
+        ReflectionTestUtils.setField(klass, "id", 1L);
+        Enrollment enrollment = EnrollmentFixture.수강_확정된_수강신청(klassmate, klass);
+        given(enrollmentRepository.findByIdAndKlassmateId(1L, 1L)).willReturn(Optional.of(enrollment));
+        willThrow(new RuntimeException("이벤트 발행 실패")).given(waitlistEventPublisher).publish(1L);
+
+        enrollmentService.cancelEnrollment(1L, 1L);
+
+        assertThat(enrollment.getStatus()).isEqualTo(EnrollmentStatus.CANCELLED);
+        then(klassRepository).should().increaseRemainingCapacity(1L);
     }
 
     @Test
