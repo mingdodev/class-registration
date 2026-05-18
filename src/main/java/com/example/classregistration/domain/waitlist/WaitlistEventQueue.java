@@ -22,10 +22,9 @@ public class WaitlistEventQueue implements WaitlistEventPublisher {
 
     private final WaitlistProcessorService processorService;
 
-
-    private final ConcurrentHashMap<Long, ConcurrentLinkedQueue<Long>> queues = new ConcurrentHashMap<>(); // 강의별 독립 인메모리 큐
-    private final ConcurrentHashMap<Long, AtomicBoolean> consumers = new ConcurrentHashMap<>(); // 강의별 소비자 스레드 실행 여부 (강의당 소비자 하나 보장)
-    private final ConcurrentHashMap<Long, CircuitBreaker> circuits = new ConcurrentHashMap<>(); // 강의별 서킷 브레이커
+    private final ConcurrentHashMap<Long, ConcurrentLinkedQueue<Long>> queues = new ConcurrentHashMap<>();
+    private final ConcurrentHashMap<Long, AtomicBoolean> consumers = new ConcurrentHashMap<>();
+    private final ConcurrentHashMap<Long, CircuitBreaker> circuits = new ConcurrentHashMap<>();
 
     @Override
     public void publish(Long klassId) {
@@ -49,7 +48,6 @@ public class WaitlistEventQueue implements WaitlistEventPublisher {
 
         AtomicBoolean running = consumers.computeIfAbsent(klassId, k -> new AtomicBoolean(false));
         if (running.compareAndSet(false, true)) {
-            // 가상 스레드로 소비자 생성
             Thread.ofVirtual().start(() -> consume(klassId, running));
         }
     }
@@ -92,7 +90,6 @@ public class WaitlistEventQueue implements WaitlistEventPublisher {
         }
     }
 
-    // 강의별 서킷 브레이커 상태 관리
     static class CircuitBreaker {
 
         enum State { CLOSED, OPEN, HALF_OPEN }

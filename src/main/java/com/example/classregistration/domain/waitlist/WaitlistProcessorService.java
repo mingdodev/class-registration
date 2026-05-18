@@ -24,10 +24,6 @@ public class WaitlistProcessorService {
     private final KlassRepository klassRepository;
     private final EnrollmentRepository enrollmentRepository;
 
-    /**
-     * 강의의 대기열 이벤트를 처리한다.
-     * @return 처리 성공 여부 (false면 이벤트를 큐에서 제거하지 않고 재시도)
-     */
     @Transactional
     public boolean process(Long klassId) {
         Optional<Waitlist> entry = waitlistRepository.findFirstWaiterByKlassId(klassId);
