@@ -21,6 +21,10 @@ public class KlassRequestFixture {
         return new UpdateKlassRequest(title, null, null, null, null, null);
     }
 
+    public static UpdateKlassRequest 강의명이_20자_초과인_수정_요청() {
+        return new UpdateKlassRequest("이강의이름은스무자를초과하는아주긴강의이름입니다", null, null, null, null, null);
+    }
+
     public static UpdateKlassRequest 가격_수정_요청(int price) {
         return new UpdateKlassRequest(null, null, price, null, null, null);
     }

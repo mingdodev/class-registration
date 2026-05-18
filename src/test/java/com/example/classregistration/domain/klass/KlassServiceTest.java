@@ -163,6 +163,30 @@ class KlassServiceTest {
     }
 
     @Test
+    void OPEN_강의의_제목을_수정하면_제목이_변경된다() {
+        given(creator.getId()).willReturn(1L);
+        Klass klass = KlassFixture.모집중_강의(creator);
+        UpdateKlassRequest request = KlassRequestFixture.제목_수정_요청("수정된 강의");
+        given(klassRepository.findById(1L)).willReturn(Optional.of(klass));
+
+        klassService.updateKlass(1L, 1L, request);
+
+        assertThat(klass.getTitle()).isEqualTo("수정된 강의");
+    }
+
+    @Test
+    void 강의명이_20자를_초과하면_수정_시에도_예외가_발생한다() {
+        given(creator.getId()).willReturn(1L);
+        Klass klass = KlassFixture.초안_강의(creator);
+        UpdateKlassRequest request = KlassRequestFixture.강의명이_20자_초과인_수정_요청();
+        given(klassRepository.findById(1L)).willReturn(Optional.of(klass));
+
+        assertThatThrownBy(() -> klassService.updateKlass(1L, 1L, request))
+                .isInstanceOf(BusinessException.class)
+                .hasFieldOrPropertyWithValue("errorCode", ErrorCode.KLASS_TITLE_TOO_LONG);
+    }
+
+    @Test
     void 자신의_강의가_아닌_강의를_수정하면_예외가_발생한다() {
         Creator otherCreator = mock(Creator.class);
         given(otherCreator.getId()).willReturn(99L);

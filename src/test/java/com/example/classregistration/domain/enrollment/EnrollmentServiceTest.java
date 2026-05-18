@@ -85,8 +85,18 @@ class EnrollmentServiceTest {
     }
 
     @Test
-    void OPEN_상태가_아닌_강의에_수강_신청하면_예외가_발생한다() {
-        Klass klass = KlassFixture.초안_강의(creator); // DRAFT
+    void DRAFT_강의에_수강_신청하면_예외가_발생한다() {
+        Klass klass = KlassFixture.초안_강의(creator);
+        given(klassRepository.findById(1L)).willReturn(Optional.of(klass));
+
+        assertThatThrownBy(() -> enrollmentService.enroll(1L, 1L))
+                .isInstanceOf(BusinessException.class)
+                .hasFieldOrPropertyWithValue("errorCode", ErrorCode.KLASS_NOT_OPEN);
+    }
+
+    @Test
+    void CLOSED_강의에_수강_신청하면_예외가_발생한다() {
+        Klass klass = KlassFixture.수강_기간이_종료되지_않은_마감된_강의(creator);
         given(klassRepository.findById(1L)).willReturn(Optional.of(klass));
 
         assertThatThrownBy(() -> enrollmentService.enroll(1L, 1L))
