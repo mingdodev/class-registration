@@ -1,7 +1,12 @@
 package com.example.classregistration.domain.enrollment;
 
 import com.example.classregistration.domain.enrollment.dto.CreateEnrollmentResponse;
+import com.example.classregistration.domain.enrollment.dto.MyEnrollmentResponse;
+import com.example.classregistration.domain.enrollment.dto.MyEnrollmentStatusResponse;
 import com.example.classregistration.domain.enrollment.model.Enrollment;
+import com.example.classregistration.domain.enrollment.model.EnrollmentStatus;
+import com.example.classregistration.global.response.CursorPage;
+import org.springframework.data.domain.PageRequest;
 import com.example.classregistration.domain.klass.KlassRepository;
 import com.example.classregistration.domain.klass.model.Klass;
 import com.example.classregistration.domain.klassmate.KlassmateRepository;
@@ -69,6 +74,21 @@ public class EnrollmentService {
                 log.error("대기열 이벤트 발행 실패: klassId={}", klassId, e);
             }
         }
+    }
+
+    public CursorPage<MyEnrollmentResponse> getMyEnrollments(Long klassmateId, EnrollmentStatus status, String cursor, int size) {
+        LocalDateTime cursorTime = cursor != null ? LocalDateTime.parse(cursor) : null;
+        List<Enrollment> enrollments = enrollmentRepository.findMyEnrollments(klassmateId, status, cursorTime, PageRequest.of(0, size + 1));
+        boolean hasNext = enrollments.size() > size;
+        List<Enrollment> content = hasNext ? enrollments.subList(0, size) : enrollments;
+        String nextCursor = hasNext ? content.get(content.size() - 1).getCreatedAt().toString() : null;
+        return new CursorPage<>(content.stream().map(MyEnrollmentResponse::from).toList(), nextCursor, hasNext);
+    }
+
+    public MyEnrollmentStatusResponse getMyEnrollmentStatus(Long klassmateId, Long klassId) {
+        return enrollmentRepository.findActiveEnrollment(klassmateId, klassId)
+                .map(e -> new MyEnrollmentStatusResponse(true, e.getId(), e.getStatus()))
+                .orElse(new MyEnrollmentStatusResponse(false, null, null));
     }
 
     public List<Long> findExpiredPendingEnrollmentIds() {
