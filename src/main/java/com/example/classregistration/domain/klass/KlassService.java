@@ -15,6 +15,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDate;
 import java.util.List;
 
 @Service
@@ -80,6 +81,12 @@ public class KlassService {
         Klass klass = findKlassById(klassId);
         validateOwnership(klass, creatorId);
         return enrollmentRepository.findRegisteredEnrollmentsByKlassId(klassId);
+    }
+
+    @Transactional
+    public void closeExpiredKlasses() {
+        klassRepository.findExpiredOpenKlasses(LocalDate.now())
+                .forEach(Klass::close);
     }
 
     private Klass findKlassById(Long klassId) {

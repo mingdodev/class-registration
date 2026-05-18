@@ -127,6 +127,10 @@ public class Klass {
         return endDate != null && LocalDate.now().isAfter(endDate);
     }
 
+    public void close() {
+        this.status = KlassStatus.CLOSED;
+    }
+
     public void reopen() {
         this.status = KlassStatus.OPEN;
     }
