@@ -33,10 +33,15 @@ public class WaitlistEventQueue implements WaitlistEventPublisher {
         startConsumerIfIdle(klassId);
     }
 
-    // HALF_OPEN 상태 진입 - 스케줄러가 주기적으로 호출
-    public void triggerHalfOpen(Long klassId) {
-        circuits.computeIfAbsent(klassId, k -> new CircuitBreaker()).halfOpen();
-        startConsumerIfIdle(klassId);
+    // 스케줄러: 서킷이 OPEN된 강의의 대기열 처리를 재시도한다 (서킷 HALF_OPEN)
+    public void retryOpenCircuits() {
+        circuits.entrySet().stream()
+                .filter(e -> !e.getValue().allowRequest())
+                .map(java.util.Map.Entry::getKey)
+                .forEach(klassId -> {
+                    circuits.get(klassId).halfOpen();
+                    startConsumerIfIdle(klassId);
+                });
     }
 
     private void startConsumerIfIdle(Long klassId) {
