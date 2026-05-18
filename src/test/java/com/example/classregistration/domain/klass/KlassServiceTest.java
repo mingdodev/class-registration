@@ -4,7 +4,8 @@ import com.example.classregistration.domain.creator.CreatorRepository;
 import com.example.classregistration.domain.creator.model.Creator;
 import com.example.classregistration.domain.enrollment.EnrollmentRepository;
 import com.example.classregistration.domain.enrollment.model.Enrollment;
-import com.example.classregistration.domain.klass.dto.*;
+import com.example.classregistration.domain.klass.dto.CreateKlassRequest;
+import com.example.classregistration.domain.klass.dto.UpdateKlassRequest;
 import com.example.classregistration.domain.klass.model.Klass;
 import com.example.classregistration.domain.klass.model.KlassStatus;
 import com.example.classregistration.domain.klassmate.model.Klassmate;
@@ -300,15 +301,13 @@ class KlassServiceTest {
 
     @Test
     void 강의_상세를_조회한다() {
-        given(creator.getId()).willReturn(1L);
         Klass klass = KlassFixture.모집중_강의(creator);
         given(klassRepository.findById(1L)).willReturn(Optional.of(klass));
 
-        KlassDetailResponse response = klassService.getKlass(1L);
+        Klass result = klassService.getKlass(1L);
 
-        assertThat(response.title()).isEqualTo(klass.getTitle());
-        assertThat(response.status()).isEqualTo(KlassStatus.OPEN);
-        assertThat(response.enrolledCount()).isEqualTo(klass.getMaxCapacity() - klass.getRemainingCapacity());
+        assertThat(result.getTitle()).isEqualTo(klass.getTitle());
+        assertThat(result.getStatus()).isEqualTo(KlassStatus.OPEN);
     }
 
     @Test
@@ -328,9 +327,9 @@ class KlassServiceTest {
         Klass open = KlassFixture.모집중_강의(creator);
         given(klassRepository.findByCreatorId(1L)).willReturn(List.of(draft, open));
 
-        CreatorKlassListResponse response = klassService.getCreatorKlasses(1L, null);
+        List<Klass> result = klassService.getCreatorKlasses(1L, null);
 
-        assertThat(response.klasses()).hasSize(2);
+        assertThat(result).hasSize(2);
     }
 
     @Test
@@ -338,9 +337,9 @@ class KlassServiceTest {
         Klass openKlass = KlassFixture.모집중_강의(creator);
         given(klassRepository.findByCreatorIdAndStatus(1L, KlassStatus.OPEN)).willReturn(List.of(openKlass));
 
-        CreatorKlassListResponse response = klassService.getCreatorKlasses(1L, KlassStatus.OPEN);
+        List<Klass> result = klassService.getCreatorKlasses(1L, KlassStatus.OPEN);
 
-        assertThat(response.klasses()).hasSize(1);
+        assertThat(result).hasSize(1);
     }
 
     // ===== getKlassmates =====
@@ -354,9 +353,9 @@ class KlassServiceTest {
         given(klassRepository.findById(1L)).willReturn(Optional.of(klass));
         given(enrollmentRepository.findRegisteredEnrollmentsByKlassId(1L)).willReturn(List.of(enrollment));
 
-        KlassmatesResponse response = klassService.getKlassmates(1L, 1L);
+        List<Enrollment> result = klassService.getKlassmates(1L, 1L);
 
-        assertThat(response.klassmates()).hasSize(1);
+        assertThat(result).hasSize(1);
     }
 
     @Test

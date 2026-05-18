@@ -2,7 +2,7 @@
 
 | 작성일 | 수정일 |
 |---|---|
-| 2026-05-18 | 2026-05-18 |
+| 2026-05-18 | 2026-05-18 (섹션 5 추가) |
 
 ---
 
@@ -80,3 +80,30 @@ API 명세에 `KLASS_TITLE_TOO_LONG`, `KLASS_CAPACITY_INVALID` 같은 도메인 
 - Record는 생성자, getter, equals, hashCode, toString을 자동 생성해 boilerplate를 줄인다.
 - Spring Boot 3+ / Jackson 2.12+에서 Record의 JSON 직렬화·역직렬화가 기본 지원된다.
 - Lombok 없이도 간결하게 표현할 수 있다.
+
+---
+
+## 5. Response DTO 변환 위치: 컨트롤러에서 수행
+
+**상태**: 결정됨
+
+### 결정
+서비스 레이어의 조회 메서드는 도메인 모델을 반환한다. Response DTO 변환은 컨트롤러에서 `ResponseDto.from(domain)`으로 수행한다.
+조회 메서드에 `@Transactional(readOnly = true)`를 붙이지 않는다.
+
+### 이유
+
+**도메인 순수성**
+서비스가 Response DTO를 반환하면 도메인 레이어가 프레젠테이션 형식을 알게 된다. 서비스는 도메인 모델만 반환하고, 표현 형식 결정은 컨트롤러에 위임한다.
+Spring Boot는 OSIV(`spring.jpa.open-in-view`)가 기본으로 활성화되어 있어, 서비스 트랜잭션이 종료된 이후 컨트롤러에서 lazy 로딩이 발생해도 `LazyInitializationException`이 발생하지 않는다.
+해당 서비스는 성능이 중요한 경우를 제외하고서는, OSIV를 활용해 레이어 간 책임을 분리하는 것을 더 우선시한다.
+
+**`@Transactional(readOnly = true)` 미사용 이유**
+
+dirty checking 최적화나 단일 트랜잭션으로의 묶음 등 성능 이점은 이론적으로 존재하나, 실제 운영 환경에서 측정된 수치 없이 적용하면 트랜잭션 범위 확대에 따른 사이드 이펙트(커넥션 점유 시간, 예상치 못한 추가 쿼리 등)를 정확히 예측하기 어렵다.
+DB Replication 환경처럼 readOnly 힌트가 명확한 이점을 갖는 상황이 아니라면, 성능 검증이 선행된 이후 도입하는 것이 적절하다.
+
+### 결과
+
+'읽기'를 명시하지 않게 되므로, 실수로 쓰기가 끼어들어도 런타임에 감지되지 않는다.
+코드 리뷰와 테스트로 보완한다.
