@@ -12,6 +12,7 @@ import com.example.classregistration.domain.klass.model.Klass;
 import com.example.classregistration.domain.klassmate.repository.KlassmateRepository;
 import com.example.classregistration.domain.klassmate.model.Klassmate;
 import com.example.classregistration.domain.waitlist.publisher.WaitlistEventPublisher;
+import com.example.classregistration.domain.enrollment.client.PaymentClient;
 import com.example.classregistration.fixture.EnrollmentFixture;
 import com.example.classregistration.fixture.KlassFixture;
 import com.example.classregistration.global.exception.BusinessException;
@@ -44,6 +45,8 @@ class EnrollmentServiceTest {
     private EnrollmentRepository enrollmentRepository;
     @Mock
     private WaitlistEventPublisher waitlistEventPublisher;
+    @Mock
+    private PaymentClient paymentClient;
     @InjectMocks
     private EnrollmentService enrollmentService;
 
@@ -166,6 +169,7 @@ class EnrollmentServiceTest {
         Klass klass = KlassFixture.모집중_강의(creator);
         Enrollment enrollment = EnrollmentFixture.결제_대기중_수강신청(klassmate, klass);
         given(enrollmentRepository.findByIdAndKlassmateId(1L, 1L)).willReturn(Optional.of(enrollment));
+        given(paymentClient.pay(anyLong(), anyInt())).willReturn(true);
 
         enrollmentService.confirmEnrollment(1L, 1L);
 
@@ -178,6 +182,7 @@ class EnrollmentServiceTest {
         Klass klass = KlassFixture.모집중_강의(creator);
         Enrollment enrollment = EnrollmentFixture.결제_기한이_만료된_수강신청(klassmate, klass);
         given(enrollmentRepository.findByIdAndKlassmateId(1L, 1L)).willReturn(Optional.of(enrollment));
+        given(paymentClient.pay(anyLong(), anyInt())).willReturn(true);
 
         assertThatThrownBy(() -> enrollmentService.confirmEnrollment(1L, 1L))
                 .isInstanceOf(BusinessException.class)
@@ -197,6 +202,7 @@ class EnrollmentServiceTest {
     @MethodSource("nonPendingEnrollments")
     void PENDING이_아닌_수강신청을_확정하면_예외가_발생한다(Enrollment enrollment) {
         given(enrollmentRepository.findByIdAndKlassmateId(1L, 1L)).willReturn(Optional.of(enrollment));
+        given(paymentClient.pay(anyLong(), anyInt())).willReturn(true);
 
         assertThatThrownBy(() -> enrollmentService.confirmEnrollment(1L, 1L))
                 .isInstanceOf(BusinessException.class)
