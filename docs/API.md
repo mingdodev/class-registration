@@ -326,6 +326,7 @@ X-Creator-Id: {강사 ID}
 | 강의 없음 | `KLASS_NOT_FOUND` | 404 |
 | 자신의 강의가 아님 | `KLASS_ACCESS_DENIED` | 403 |
 | 강의명 20자 초과 | `KLASS_TITLE_TOO_LONG` | 400 |
+| 수강 정원 1명 미만 | `KLASS_CAPACITY_INVALID` | 400 |
 | OPEN/CLOSED 상태에서 가격 수정 | `KLASS_PRICE_UPDATE_NOT_ALLOWED` | 400 |
 | OPEN/CLOSED 상태에서 정원 감소 | `KLASS_CAPACITY_DECREASE_NOT_ALLOWED` | 400 |
 

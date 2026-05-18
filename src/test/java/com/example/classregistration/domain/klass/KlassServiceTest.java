@@ -181,6 +181,18 @@ class KlassServiceTest {
     }
 
     @Test
+    void DRAFT_강의의_정원을_1명_미만으로_수정하면_예외가_발생한다() {
+        given(creator.getId()).willReturn(1L);
+        Klass klass = KlassFixture.초안_강의(creator);
+        UpdateKlassRequest request = KlassRequestFixture.정원_감소_수정_요청(0);
+        given(klassRepository.findById(1L)).willReturn(Optional.of(klass));
+
+        assertThatThrownBy(() -> klassService.updateKlass(1L, 1L, request))
+                .isInstanceOf(BusinessException.class)
+                .hasFieldOrPropertyWithValue("errorCode", ErrorCode.KLASS_CAPACITY_INVALID);
+    }
+
+    @Test
     void 모집중인_강의의_가격을_수정하려_하면_예외가_발생한다() {
         given(creator.getId()).willReturn(1L);
         Klass klass = KlassFixture.모집중_강의(creator);
