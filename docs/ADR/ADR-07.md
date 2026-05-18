@@ -114,3 +114,46 @@ int updateCapacity(@Param("klassId") Long klassId, @Param("newMaxCapacity") int 
 낙관적 락은 정원 수정 간의 충돌만 막을 뿐, 수강 신청과 정원 수정 사이의 경쟁은 해결하지 못한다.
 
 두 연산을 모두 원자적 쿼리로 통일하면 DB가 행 단위로 직렬화하므로 모든 경쟁이 사라진다.
+
+---
+
+## 3. 대기열 이벤트 발행 타이밍과 트랜잭션 롤백 문제
+
+**상태**: 미구현 개선 사항
+
+### 컨텍스트
+
+수강 신청 취소나 정원 증가 시, 서비스 레이어는 트랜잭션이 커밋되기 전에 `waitlistEventPublisher.publish()`를 호출한다.
+
+```
+취소 트랜잭션 내부:
+  1. enrollment.cancel()
+  2. klassRepository.increaseRemainingCapacity()
+  3. waitlistEventPublisher.publish()  ← 아직 커밋 전
+  4. 트랜잭션 커밋
+```
+
+이벤트를 수신한 `WaitlistEventQueue`는 즉시 `WaitlistProcessorService.process()`를 가상 스레드에서 실행한다. 이 처리는 별도 트랜잭션이므로, 원본 취소 트랜잭션이 롤백되더라도 대기열 처리는 이미 진행 중일 수 있다.
+
+`WaitlistProcessorService.process()`는 `decreaseRemainingCapacity()`가 0을 반환하면 즉시 `false`를 리턴하고, 소비 로직에서 `queue.poll()`을 호출하지 않아 대기열 항목을 유지한다.
+롤백으로 인해 실제로 재고가 늘지 않은 경우 `decreaseRemainingCapacity()`가 실패하므로 수강신청이 잘못 생성되는 상황은 방지된다.
+
+### 현재 동작의 문제
+
+`false`를 반환하면 소비 로직이 재시도를 수행하고, 재시도도 실패하면 `circuit.recordFailure()`가 호출된다.
+이 경우는 롤백으로 인한 일시적 상태이므로 서킷 브레이커가 불필요하게 차단될 수 있다.
+
+### 미구현 개선 방향
+
+근본 해결책은 트랜잭션 커밋이 성공한 후에만 이벤트를 발행하는 것이다.
+
+```java
+@TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
+public void handleWaitlistEvent(WaitlistEvent event) {
+    waitlistEventPublisher.publish(event.klassId());
+}
+```
+
+`@TransactionalEventListener`를 사용하면 커밋 전 롤백 시 이벤트 자체가 발행되지 않아 불필요한 재시도와 서킷 차단이 사라진다.
+
+현재는 로직의 정합성(잘못된 수강신청 생성 방지)은 보장되며, 불필요한 서킷 차단이 발생할 수 있다는 점을 인지한 상태로 과제 구현 범위 외로 남긴다.

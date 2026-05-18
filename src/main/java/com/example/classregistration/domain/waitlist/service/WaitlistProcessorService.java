@@ -31,7 +31,8 @@ public class WaitlistProcessorService {
 
         if (entry.isPresent()) {
             Waitlist waitlist = entry.get();
-            klassRepository.decreaseRemainingCapacity(klassId);
+            int updated = klassRepository.decreaseRemainingCapacity(klassId);
+            if (updated == 0) return false;
 
             Klass klass = klassRepository.getReferenceById(klassId);
             enrollmentRepository.save(Enrollment.create(waitlist.getKlassmate(), klass));
