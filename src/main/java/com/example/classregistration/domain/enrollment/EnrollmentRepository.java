@@ -21,7 +21,7 @@ public interface EnrollmentRepository extends JpaRepository<Enrollment, Long> {
     @Query("SELECT e FROM Enrollment e WHERE e.klass.id = :klassId AND e.status IN ('PENDING', 'CONFIRMED')")
     List<Enrollment> findRegisteredEnrollmentsByKlassId(@Param("klassId") Long klassId);
 
-    // 스케줄러: 결제 기한 초과 PENDING 조회 — klass(이벤트 발행 시 강의 상태를 참조해야 함) fetch join으로 N+1 방지
-    @Query("SELECT e FROM Enrollment e JOIN FETCH e.klass WHERE e.status = 'PENDING' AND e.createdAt < :expiredBefore")
+    // 스케줄러: 결제 기한(24시간) 초과 PENDING ID 목록 조회
+    @Query("SELECT e FROM Enrollment e WHERE e.status = 'PENDING' AND e.createdAt < :expiredBefore")
     List<Enrollment> findExpiredPendingEnrollments(@Param("expiredBefore") LocalDateTime expiredBefore);
 }

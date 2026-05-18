@@ -71,24 +71,25 @@ public class EnrollmentService {
         }
     }
 
+    public List<Long> findExpiredPendingEnrollmentIds() {
+        return enrollmentRepository.findExpiredPendingEnrollments(LocalDateTime.now().minusHours(24))
+                .stream().map(Enrollment::getId).toList();
+    }
+
     @Transactional
-    public void cancelExpiredPendingEnrollments() {
-        List<Enrollment> expired = enrollmentRepository.findExpiredPendingEnrollments(
-                LocalDateTime.now().minusHours(24));
+    public void cancelExpiredPendingEnrollment(Long enrollmentId) {
+        Enrollment enrollment = enrollmentRepository.findById(enrollmentId)
+                .orElseThrow(() -> new BusinessException(ErrorCode.ENROLLMENT_NOT_FOUND));
+        Long klassId = enrollment.getKlass().getId();
+        KlassStatus klassStatus = enrollment.getKlass().getStatus();
+        enrollment.expirePayment();
+        klassRepository.increaseRemainingCapacity(klassId);
 
-        for (Enrollment enrollment : expired) {
-            Long klassId = enrollment.getKlass().getId();
-            KlassStatus klassStatus = enrollment.getKlass().getStatus();
-            enrollment.expirePayment();
-            klassRepository.increaseRemainingCapacity(klassId);
-
-            // CLOSED 상태에서만 대기열 이벤트 발행
-            if (klassStatus == KlassStatus.CLOSED) {
-                try {
-                    waitlistEventPublisher.publish(klassId);
-                } catch (Exception e) {
-                    log.error("대기열 이벤트 발행 실패: klassId={}", klassId, e);
-                }
+        if (klassStatus == KlassStatus.CLOSED) {
+            try {
+                waitlistEventPublisher.publish(klassId);
+            } catch (Exception e) {
+                log.error("대기열 이벤트 발행 실패: klassId={}", klassId, e);
             }
         }
     }

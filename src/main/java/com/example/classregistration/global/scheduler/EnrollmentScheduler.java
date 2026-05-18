@@ -13,10 +13,15 @@ public class EnrollmentScheduler {
 
     private final EnrollmentService enrollmentService;
 
-    // 1시간마다 결제 기한을 초과한 수강 신청(PENDING)을 자동 취소
     @Scheduled(fixedRate = 3_600_000)
     public void cancelExpiredPendingEnrollments() {
         log.info("PENDING 자동 취소 스케줄러 실행");
-        enrollmentService.cancelExpiredPendingEnrollments();
+        enrollmentService.findExpiredPendingEnrollmentIds().forEach(id -> {
+            try {
+                enrollmentService.cancelExpiredPendingEnrollment(id);
+            } catch (Exception e) {
+                log.error("만료 PENDING 취소 실패: enrollmentId={}", id, e);
+            }
+        });
     }
 }
