@@ -15,6 +15,7 @@ import com.example.classregistration.domain.klass.model.KlassStatus;
 import com.example.classregistration.domain.waitlist.WaitlistEventPublisher;
 import com.example.classregistration.global.exception.BusinessException;
 import com.example.classregistration.global.exception.ErrorCode;
+import com.example.classregistration.global.payment.PaymentClient;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -32,6 +33,7 @@ public class EnrollmentService {
     private final KlassmateRepository klassmateRepository;
     private final EnrollmentRepository enrollmentRepository;
     private final WaitlistEventPublisher waitlistEventPublisher;
+    private final PaymentClient paymentClient;
 
     @Transactional
     public CreateEnrollmentResponse enroll(Long klassmateId, Long klassId) {
@@ -55,6 +57,9 @@ public class EnrollmentService {
     @Transactional
     public void confirmEnrollment(Long klassmateId, Long enrollmentId) {
         Enrollment enrollment = findEnrollment(klassmateId, enrollmentId);
+        if (!paymentClient.pay(enrollmentId, enrollment.getKlass().getPrice())) {
+            throw new BusinessException(ErrorCode.PAYMENT_FAILED);
+        }
         enrollment.confirm();
     }
 

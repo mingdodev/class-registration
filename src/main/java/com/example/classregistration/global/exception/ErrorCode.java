@@ -22,6 +22,7 @@ public enum ErrorCode {
     KLASS_PRICE_UPDATE_NOT_ALLOWED(HttpStatus.BAD_REQUEST, "모집 중이거나 마감된 강의의 가격은 수정할 수 없습니다."),
 
     // Enrollment
+    PAYMENT_FAILED(HttpStatus.PAYMENT_REQUIRED, "결제에 실패했습니다."),
     ENROLLMENT_NOT_FOUND(HttpStatus.NOT_FOUND, "수강 신청을 찾을 수 없습니다."),
     ENROLLMENT_ALREADY_EXISTS(HttpStatus.CONFLICT, "이미 수강 신청한 강의입니다."),
     ENROLLMENT_NOT_PENDING(HttpStatus.CONFLICT, "결제 대기 중인 수강 신청이 아닙니다."),
