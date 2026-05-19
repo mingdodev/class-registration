@@ -42,7 +42,6 @@ public class WaitlistService {
         waitlistRepository.delete(waitlist);
     }
 
-    @Transactional(readOnly = true)
     public MyWaitlistStatusResponse getMyWaitlistStatus(Long klassmateId, Long klassId) {
         findKlassById(klassId);
         return waitlistRepository.findByKlassmateIdAndKlassId(klassmateId, klassId)
