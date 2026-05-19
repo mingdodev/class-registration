@@ -126,7 +126,11 @@ RFC 9457 표준을 따르는 ProblemDetail 포맷으로 응답합니다.
 
 ## 강의 API
 
-공통 헤더가 없는 경우 인증 없이 접근 가능합니다.
+### 공개
+
+인증 없이 접근 가능합니다.
+
+---
 
 ### GET /api/klasses
 
@@ -207,9 +211,9 @@ RFC 9457 표준을 따르는 ProblemDetail 포맷으로 응답합니다.
 
 ---
 
-## 강사 API
+### 강사 전용
 
-강사 전용 API입니다. 모든 요청에 `X-Creator-Id` 헤더가 필요합니다.
+모든 요청에 `X-Creator-Id` 헤더가 필요합니다.
 
 ```
 X-Creator-Id: {강사 ID}
@@ -427,7 +431,9 @@ X-Creator-Id: {강사 ID}
 
 ## 수강 신청 API
 
-수강생 전용 API입니다. 모든 요청에 `X-Klassmate-Id` 헤더가 필요합니다.
+### 수강생 전용
+
+모든 요청에 `X-Klassmate-Id` 헤더가 필요합니다.
 
 ```
 X-Klassmate-Id: {수강생 ID}
@@ -587,7 +593,9 @@ X-Klassmate-Id: {수강생 ID}
 
 ## 대기열 API
 
-수강생 전용 API입니다. 모든 요청에 `X-Klassmate-Id` 헤더가 필요합니다.
+### 수강생 전용
+
+모든 요청에 `X-Klassmate-Id` 헤더가 필요합니다.
 
 ```
 X-Klassmate-Id: {수강생 ID}
