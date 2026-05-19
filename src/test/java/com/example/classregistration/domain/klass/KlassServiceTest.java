@@ -298,6 +298,43 @@ class KlassServiceTest {
     }
 
     @Test
+    void DRAFT_강의의_수강_기간을_수정하면_날짜가_변경된다() {
+        given(creator.getId()).willReturn(1L);
+        Klass klass = KlassFixture.초안_강의(creator);
+        UpdateKlassRequest request = KlassRequestFixture.수강_기간_수정_요청();
+        given(klassRepository.findById(1L)).willReturn(Optional.of(klass));
+
+        klassService.updateKlass(1L, 1L, request);
+
+        assertThat(klass.getStartDate()).isEqualTo(request.startDate());
+        assertThat(klass.getEndDate()).isEqualTo(request.endDate());
+    }
+
+    @Test
+    void OPEN_강의의_수강_기간을_수정하려_하면_예외가_발생한다() {
+        given(creator.getId()).willReturn(1L);
+        Klass klass = KlassFixture.모집중_강의(creator);
+        UpdateKlassRequest request = KlassRequestFixture.수강_기간_수정_요청();
+        given(klassRepository.findById(1L)).willReturn(Optional.of(klass));
+
+        assertThatThrownBy(() -> klassService.updateKlass(1L, 1L, request))
+                .isInstanceOf(BusinessException.class)
+                .hasFieldOrPropertyWithValue("errorCode", ErrorCode.KLASS_PERIOD_UPDATE_NOT_ALLOWED);
+    }
+
+    @Test
+    void CLOSED_강의의_수강_기간을_수정하려_하면_예외가_발생한다() {
+        given(creator.getId()).willReturn(1L);
+        Klass klass = KlassFixture.수강_기간이_종료되지_않은_마감된_강의(creator);
+        UpdateKlassRequest request = KlassRequestFixture.수강_기간_수정_요청();
+        given(klassRepository.findById(1L)).willReturn(Optional.of(klass));
+
+        assertThatThrownBy(() -> klassService.updateKlass(1L, 1L, request))
+                .isInstanceOf(BusinessException.class)
+                .hasFieldOrPropertyWithValue("errorCode", ErrorCode.KLASS_PERIOD_UPDATE_NOT_ALLOWED);
+    }
+
+    @Test
     void 마감된_강의의_정원을_줄이려_하면_예외가_발생한다() {
         given(creator.getId()).willReturn(1L);
         Klass klass = KlassFixture.수강_기간이_종료되지_않은_마감된_강의(creator);

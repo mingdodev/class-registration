@@ -20,6 +20,7 @@ public enum ErrorCode {
     KLASS_NOT_DELETABLE(HttpStatus.CONFLICT, "공개된 강의는 삭제할 수 없습니다."),
     KLASS_CAPACITY_DECREASE_NOT_ALLOWED(HttpStatus.BAD_REQUEST, "모집 중이거나 마감된 강의의 수강 정원은 줄일 수 없습니다."),
     KLASS_PRICE_UPDATE_NOT_ALLOWED(HttpStatus.BAD_REQUEST, "모집 중이거나 마감된 강의의 가격은 수정할 수 없습니다."),
+    KLASS_PERIOD_UPDATE_NOT_ALLOWED(HttpStatus.BAD_REQUEST, "수강 기간은 초안(DRAFT) 상태에서만 수정할 수 있습니다."),
 
     // Enrollment
     PAYMENT_FAILED(HttpStatus.PAYMENT_REQUIRED, "결제에 실패했습니다."),

@@ -103,8 +103,11 @@ public class Klass {
             }
             // 실제 DB 반영은 KlassService에서 원자적 쿼리로 처리
         }
-        if (startDate != null) this.startDate = startDate;
-        if (endDate != null) this.endDate = endDate;
+        if (startDate != null || endDate != null) {
+            if (status != KlassStatus.DRAFT) throw new BusinessException(ErrorCode.KLASS_PERIOD_UPDATE_NOT_ALLOWED);
+            if (startDate != null) this.startDate = startDate;
+            if (endDate != null) this.endDate = endDate;
+        }
     }
 
     public void validateDeletable() {

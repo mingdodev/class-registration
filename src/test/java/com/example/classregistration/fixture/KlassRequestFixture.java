@@ -36,4 +36,9 @@ public class KlassRequestFixture {
     public static UpdateKlassRequest 정원_증가_수정_요청(int maxCapacity) {
         return new UpdateKlassRequest(null, null, null, maxCapacity, null, null);
     }
+
+    public static UpdateKlassRequest 수강_기간_수정_요청() {
+        return new UpdateKlassRequest(null, null, null, null,
+                java.time.LocalDate.now().plusDays(10), java.time.LocalDate.now().plusDays(40));
+    }
 }

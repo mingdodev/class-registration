@@ -2,7 +2,7 @@
 
 | 작성일 | 수정일 |
 |---|---|
-| 2026-05-16 | 2026-05-17 |
+| 2026-05-16 | 2026-05-19 |
 
 ## 목차
 - [공통 응답 포맷](#공통-응답-포맷)
@@ -101,6 +101,7 @@ RFC 9457 표준을 따르는 ProblemDetail 포맷으로 응답합니다.
 | `KLASS_NOT_DELETABLE` | 409 | DRAFT 상태가 아닌 강의를 삭제하려 함 |
 | `KLASS_CAPACITY_DECREASE_NOT_ALLOWED` | 400 | OPEN/CLOSED 상태에서 최대 수강 정원을 줄이려 함 |
 | `KLASS_PRICE_UPDATE_NOT_ALLOWED` | 400 | OPEN/CLOSED 상태에서 가격을 수정하려 함 |
+| `KLASS_PERIOD_UPDATE_NOT_ALLOWED` | 400 | OPEN/CLOSED 상태에서 수강 기간을 수정하려 함 |
 
 ### 수강 신청 (Enrollment)
 
@@ -290,10 +291,10 @@ X-Creator-Id: {강사 ID}
 | `description` | O | O |
 | `price` | O | X |
 | `maxCapacity` | O | O (증가만 가능) |
-| `startDate` | O | O |
-| `endDate` | O | O |
+| `startDate` | O | X |
+| `endDate` | O | X |
 
-> `startDate`와 `endDate`는 함께 입력하거나 둘 다 생략해야 한다.
+> `startDate`와 `endDate`는 함께 입력하거나 둘 다 생략해야 한다. DRAFT 상태에서만 수정 가능하다.
 
 #### 요청 본문
 
@@ -328,6 +329,7 @@ X-Creator-Id: {강사 ID}
 | 수강 정원 1명 미만 | `KLASS_CAPACITY_INVALID` | 400 |
 | OPEN/CLOSED 상태에서 가격 수정 | `KLASS_PRICE_UPDATE_NOT_ALLOWED` | 400 |
 | OPEN/CLOSED 상태에서 정원 감소 | `KLASS_CAPACITY_DECREASE_NOT_ALLOWED` | 400 |
+| OPEN/CLOSED 상태에서 수강 기간 수정 | `KLASS_PERIOD_UPDATE_NOT_ALLOWED` | 400 |
 
 ---
 

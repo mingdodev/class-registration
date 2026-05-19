@@ -233,6 +233,18 @@ class KlassApiIntegrationTest {
     }
 
     @Test
+    void OPEN_상태에서_수강_기간_수정_요청_하면_400을_응답한다() throws Exception {
+        Klass klass = klassRepository.save(KlassFixture.모집중_강의(강사));
+        UpdateKlassRequest request = KlassRequestFixture.수강_기간_수정_요청();
+
+        mockMvc.perform(patch("/api/klasses/{klassId}", klass.getId())
+                        .header("X-Creator-Id", 강사.getId())
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(request)))
+                .andExpect(status().isBadRequest());
+    }
+
+    @Test
     void OPEN_상태에서_정원_감소_요청_하면_400을_응답한다() throws Exception {
         Klass klass = klassRepository.save(KlassFixture.모집중_강의(강사));
         UpdateKlassRequest request = KlassRequestFixture.정원_감소_수정_요청(1);
