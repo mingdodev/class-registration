@@ -66,7 +66,7 @@ docker compose up --build
 
 ---
 
-## API 명세
+## API 목록 및 예시
 
 전체 엔드포인트 목록, 요청/응답 형식, 에러 코드는 [docs/API.md](docs/API.md)에서 확인할 수 있습니다.
 
