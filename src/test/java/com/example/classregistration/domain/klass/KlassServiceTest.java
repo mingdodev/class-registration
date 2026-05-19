@@ -25,6 +25,7 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.test.util.ReflectionTestUtils;
 
+import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
 
@@ -444,5 +445,29 @@ class KlassServiceTest {
         assertThatThrownBy(() -> klassService.getKlassmates(1L, 1L))
                 .isInstanceOf(BusinessException.class)
                 .hasFieldOrPropertyWithValue("errorCode", ErrorCode.KLASS_ACCESS_DENIED);
+    }
+
+    // ===== closeExpiredKlasses (스케줄러 호출 경로) =====
+
+    @Test
+    void 수강_기간이_종료된_OPEN_강의가_없으면_아무_변화도_없다() {
+        given(klassRepository.findExpiredOpenKlasses(any(LocalDate.class))).willReturn(List.of());
+
+        klassService.closeExpiredKlasses();
+
+        then(klassRepository).should().findExpiredOpenKlasses(any(LocalDate.class));
+        then(klassRepository).shouldHaveNoMoreInteractions();
+    }
+
+    @Test
+    void 수강_기간이_종료된_OPEN_강의를_일괄_종료하면_CLOSED_상태가_된다() {
+        Klass expiredKlass1 = KlassFixture.수강_기간이_종료된_모집중_강의(creator);
+        Klass expiredKlass2 = KlassFixture.수강_기간이_종료된_모집중_강의(creator);
+        given(klassRepository.findExpiredOpenKlasses(any(LocalDate.class))).willReturn(List.of(expiredKlass1, expiredKlass2));
+
+        klassService.closeExpiredKlasses();
+
+        assertThat(expiredKlass1.getStatus()).isEqualTo(KlassStatus.CLOSED);
+        assertThat(expiredKlass2.getStatus()).isEqualTo(KlassStatus.CLOSED);
     }
 }

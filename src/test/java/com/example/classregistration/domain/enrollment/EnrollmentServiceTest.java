@@ -27,6 +27,7 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.test.util.ReflectionTestUtils;
 
+import java.util.List;
 import java.util.Optional;
 import java.util.stream.Stream;
 
@@ -325,5 +326,83 @@ class EnrollmentServiceTest {
         assertThatThrownBy(() -> enrollmentService.cancelEnrollment(1L, 1L))
                 .isInstanceOf(BusinessException.class)
                 .hasFieldOrPropertyWithValue("errorCode", ErrorCode.ENROLLMENT_ALREADY_CANCELLED);
+    }
+
+    // ===== findExpiredPendingEnrollmentIds =====
+
+    @Test
+    void 만료된_PENDING_수강신청이_없으면_빈_목록을_반환한다() {
+        given(enrollmentRepository.findExpiredPendingEnrollments(any())).willReturn(List.of());
+
+        List<Long> result = enrollmentService.findExpiredPendingEnrollmentIds();
+
+        assertThat(result).isEmpty();
+    }
+
+    @Test
+    void 만료된_PENDING_수강신청이_있으면_해당_ID_목록을_반환한다() {
+        Klass klass = KlassFixture.모집중_강의(creator);
+        Enrollment enrollment = EnrollmentFixture.결제_기한이_만료된_수강신청(klassmate, klass);
+        ReflectionTestUtils.setField(enrollment, "id", 1L);
+        given(enrollmentRepository.findExpiredPendingEnrollments(any())).willReturn(List.of(enrollment));
+
+        List<Long> result = enrollmentService.findExpiredPendingEnrollmentIds();
+
+        assertThat(result).containsExactly(1L);
+    }
+
+    // ===== cancelExpiredPendingEnrollment (스케줄러 호출 경로) =====
+
+    @Test
+    void OPEN_강의의_만료된_PENDING_수강신청을_처리하면_PAYMENT_TIMEOUT으로_취소되고_이벤트는_발행되지_않는다() {
+        Klass klass = KlassFixture.모집중_강의(creator);
+        ReflectionTestUtils.setField(klass, "id", 1L);
+        Enrollment enrollment = EnrollmentFixture.결제_대기중_수강신청(klassmate, klass);
+        given(enrollmentRepository.findById(1L)).willReturn(Optional.of(enrollment));
+
+        enrollmentService.cancelExpiredPendingEnrollment(1L);
+
+        assertThat(enrollment.getStatus()).isEqualTo(EnrollmentStatus.CANCELLED);
+        assertThat(enrollment.getCancelReason()).isEqualTo(CancelReason.PAYMENT_TIMEOUT);
+        then(klassRepository).should().increaseRemainingCapacity(1L);
+        then(waitlistEventPublisher).shouldHaveNoInteractions();
+    }
+
+    @Test
+    void CLOSED_강의의_만료된_PENDING_수강신청을_처리하면_정원이_복구되고_이벤트가_발행된다() {
+        Klass klass = KlassFixture.수강_기간이_종료되지_않은_마감된_강의(creator);
+        ReflectionTestUtils.setField(klass, "id", 1L);
+        Enrollment enrollment = EnrollmentFixture.결제_대기중_수강신청(klassmate, klass);
+        given(enrollmentRepository.findById(1L)).willReturn(Optional.of(enrollment));
+
+        enrollmentService.cancelExpiredPendingEnrollment(1L);
+
+        assertThat(enrollment.getStatus()).isEqualTo(EnrollmentStatus.CANCELLED);
+        assertThat(enrollment.getCancelReason()).isEqualTo(CancelReason.PAYMENT_TIMEOUT);
+        then(klassRepository).should().increaseRemainingCapacity(1L);
+        then(waitlistEventPublisher).should().publish(1L);
+    }
+
+    @Test
+    void 만료_처리_중_이벤트_발행에_실패해도_취소와_정원_복구는_완료된다() {
+        Klass klass = KlassFixture.수강_기간이_종료되지_않은_마감된_강의(creator);
+        ReflectionTestUtils.setField(klass, "id", 1L);
+        Enrollment enrollment = EnrollmentFixture.결제_대기중_수강신청(klassmate, klass);
+        given(enrollmentRepository.findById(1L)).willReturn(Optional.of(enrollment));
+        willThrow(new RuntimeException("이벤트 발행 실패")).given(waitlistEventPublisher).publish(1L);
+
+        enrollmentService.cancelExpiredPendingEnrollment(1L);
+
+        assertThat(enrollment.getStatus()).isEqualTo(EnrollmentStatus.CANCELLED);
+        then(klassRepository).should().increaseRemainingCapacity(1L);
+    }
+
+    @Test
+    void 존재하지_않는_수강신청을_만료_처리하면_예외가_발생한다() {
+        given(enrollmentRepository.findById(999L)).willReturn(Optional.empty());
+
+        assertThatThrownBy(() -> enrollmentService.cancelExpiredPendingEnrollment(999L))
+                .isInstanceOf(BusinessException.class)
+                .hasFieldOrPropertyWithValue("errorCode", ErrorCode.ENROLLMENT_NOT_FOUND);
     }
 }
